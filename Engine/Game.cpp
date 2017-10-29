@@ -42,7 +42,11 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
-	if ( moving_box.Collision_Test( static_box.Get_AABB() ) ) hit.Play();
+	if ( AABB_Intersection( static_box.Get_AABB(),
+							moving_box.Get_AABB() ) )
+	{
+		hit.Play();
+	}
 	// process arrow keys state
 	FVec2 dir = { 0.0f,0.0f };
 	if( wnd.kbd.KeyIsPressed( VK_UP ) )

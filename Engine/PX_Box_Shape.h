@@ -14,12 +14,14 @@ struct PX_AABB
 	{}
 };
 
+bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
+
 class PX_Box_Shape 
 {
 public:
 				PX_Box_Shape( IVec2 pos, int side );
 
-	bool		Collision_Test( const PX_AABB& box ) const;
+	bool		Collision_Test( const PX_Box_Shape& box ) const;
 	IVec2		Center() const;
 	void		Transformation( /* params */ const IVec2& displacement );
 	const int	Area() const;
@@ -44,4 +46,3 @@ private:
 	void Rotate();
 	void Translate( const IVec2& displacement );
 };
-

@@ -2,16 +2,33 @@
 #include <math.h>
 #include "Graphics.h"
 
+/*  COLLISION OF 2 AABBs  */
+bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
+{
+	return	std::abs( b.center.x - a.center.x ) < ( b.radius + a.radius ) &&
+		std::abs( b.center.y - a.center.y ) < ( b.radius + a.radius );
+}
+
+//======================================================================//
+//																		//
+//						METHODS OF CLASS:								//
+//						  PX_Box_Shape									//
+//																		//
+//======================================================================//
+
 
 PX_Box_Shape::PX_Box_Shape( IVec2 pos, int side )
 	:
 	AABB { pos, side }
 {}
-
-bool PX_Box_Shape::Collision_Test( const PX_AABB& box ) const
+//==============================================================//
+//																//
+//		COLLISION OF EMBEDDED AABB & OTHER EMBEDDED AABB:		//
+//																//
+//==============================================================//
+bool PX_Box_Shape::Collision_Test( const PX_Box_Shape& box ) const
 {
-	return	std::abs( box.center.x - this->AABB.center.x ) < ( this->AABB.radius + box.radius ) &&
-			std::abs( box.center.y - this->AABB.center.y ) < ( this->AABB.radius + box.radius );
+	return	AABB_Intersection( this->AABB, box.AABB );
 }
 
 IVec2 PX_Box_Shape::Center() const
