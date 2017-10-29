@@ -150,6 +150,9 @@
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Mouse.h" />
+    <ClInclude Include="PX_Box_Shape.h" />
+    <ClInclude Include="PX_Math.h" />
+    <ClInclude Include="PX_Physical_Traits.h" />
     <ClInclude Include="PX_Shape.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Resource.h" />
@@ -172,6 +175,8 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="Mouse.cpp" />
+    <ClCompile Include="PX_Box_Shape.cpp" />
+    <ClCompile Include="PX_Physical_Traits.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="Surface.cpp" />
   </ItemGroup>
