@@ -83,6 +83,17 @@ public:
 		}
 		return *this;
 	}
+	Vec2_ GetPerp() const
+	{
+		return { -this->y, this->x };
+	}
+	Vec2_& Negate()
+	{
+		this->x = -x;
+		this->y = -y;
+
+		return *this;
+	}
 public:
 	T x;
 	T y;
@@ -90,3 +101,17 @@ public:
 
 typedef Vec2_<float>	FVec2;
 typedef Vec2_<int>		IVec2;
+
+template<class Vec>
+float Dot_Prod( const Vec& vec1, const Vec& vec2 )
+{
+	return vec1.x * vec2.x + vec1.y * vec2.y;
+}
+
+template<class IVec, class FVec>
+float Perp_Dot_Prod( const IVec& vec1, const FVec& vec2 )
+{
+	auto perp_v1 = vec1.GetPerp();
+
+	return perp_v1.x * vec2.x + perp_v1.y * vec2.y;
+}

@@ -15,12 +15,11 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 //						  PX_Box_Shape									//
 //																		//
 //======================================================================//
-
-
 PX_Box_Shape::PX_Box_Shape( IVec2 pos, int side )
 	:
 	AABB { pos, side }
 {}
+
 //==============================================================//
 //																//
 //		COLLISION OF EMBEDDED AABB & OTHER EMBEDDED AABB:		//
