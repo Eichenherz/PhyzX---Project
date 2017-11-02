@@ -2,12 +2,12 @@
 
 #include "Vec2.h"
 #include <vector>
+#include "PX_Math.h"
 //======================================================================//
 //																		//
 //						PHYSICS SIMULATION DS							//
 //																		//
 //======================================================================//
-
 struct PX_Mass_Data
 {
 	float mass;
@@ -19,23 +19,21 @@ struct PX_Mass_Data
 		:
 		mass		{ mass },
 		mass_center { pos.x + side/2, pos.y + side/2 },
-		I_cm		{ 1.0f/6.0f * mass * float(side * side)  }
+		I_cm		{ 1.0f/6.0f * mass * float( side * side )  }
 	{}
 };
 
 struct PX_Kinetic_Data
 {
-	IVec2 pos;
-	FVec2 linear_vel;
-	FVec2 angular_vel;
-	bool movement_falg;
+	IVec2			pos;
+	Angle_Degrees	orientation;
+	FVec2			linear_vel;
+	float			angular_vel;
 
-	PX_Kinetic_Data( const IVec2& pos, bool movement = false,
-					 const FVec2& lvel = { 0.0f, 0.0f }, 
-					 const FVec2& avel = { 0.0f, 0.0f } )
+	PX_Kinetic_Data( const IVec2& pos, Angle_Degrees dgs, const FVec2& lvel = { 0.0f, 0.0f }, float avel = 0.0f )
 		:
 		pos				{ pos },
-		movement_falg	{ movement },
+		orientation		{ dgs },
 		linear_vel		{ lvel },
 		angular_vel		{ avel }
 	{}
@@ -46,7 +44,7 @@ struct PX_Force
 	FVec2 force;
 	IVec2 app_point;
 
-	PX_Force( const FVec2& f = { 0.0f, 0.0f }, const IVec2& app_point = { 0, 0 } )
+	PX_Force( const FVec2& f, const IVec2& app_point )
 		:
 		force		{ f },
 		app_point	{ app_point }
@@ -54,14 +52,14 @@ struct PX_Force
 };
 
 
-class PX_Box
+class PX_Rigid_Body_Physics
 {
 public:
-			PX_Box( float mass, int side, const IVec2& pos );
+			PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos, Angle_Degrees dgs );
 
 	void	Apply_Force( const PX_Force& force );
-	auto	New_Vel();
-	auto	New_Pos();
+	void	Update_Kinetic_State( float dt );
+	// Expose data to translate & rotate the box -> PX_Box_Shape to handle geometry & drawing
 
 private:
 	PX_Mass_Data			mass_data;

@@ -3,13 +3,14 @@
 #include <math.h>
 #include "Vec2.h"
 
-static constexpr float h = 0.005f; // EULER INTEGRATOR constant
-
-template<typename T>
-Vec2_<T>& Euler_Integrator( float dt, const Vec2_<T>& itr0 = { (T) 0,(T) 0 } )
+struct Angle_Degrees
 {
-	Vec2_<T> itr_next = itr0 + h * itr0 / dt;
+	float degrees;
 
-	return iter_next;
-}
+	//Work in progress. To be added as needed.
+
+			Angle_Degrees( float dgs );
+
+	void	Normalize_360();
+};
 
