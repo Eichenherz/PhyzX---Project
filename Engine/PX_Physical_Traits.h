@@ -76,6 +76,12 @@ struct PX_Torque // Work in progress
 	}
 };
 
+
+//======================================================================//
+//																		//
+//					PHYSICS RIGID BODY SIMULATION 						//
+//																		//
+//======================================================================//
 class PX_Rigid_Body_Physics
 {
 public:
