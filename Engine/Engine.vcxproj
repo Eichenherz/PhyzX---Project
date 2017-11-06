@@ -149,6 +149,7 @@
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="MainWindow.h" />
+    <ClInclude Include="Matrix2.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="PX_Box_Shape.h" />
     <ClInclude Include="PX_Math.h" />

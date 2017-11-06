@@ -15,50 +15,55 @@ static constexpr float	gravitational_const = 10.0f;
 //			METHODS of PX_Rigid_Body_Physics		 //
 //												     //
 //===================================================//
-PX_Rigid_Body_Physics::PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos, Angle_Degrees dgs )
+PX_Rigid_Body_Physics::PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos )
 	:
 	mass_data		{ mass, side, pos },
-	kinetic_state	{ pos, dgs }
+	kinetic_state	{ /* Defaulted to no movement */ },
+	f_total			{ { 0.0f,0.0f }, { 0,0 } },
+	t_total			{ { { 0.0f,0.0f }, { 0,0 } }, mass_data.mass_center },
+	static_drag		{ static_friction * mass_data.mass * gravitational_const },
+	kinetic_drag	{ kinetic_friction * mass_data.mass * gravitational_const }
 {}
 
-void PX_Rigid_Body_Physics::Apply_Force( const PX_Force & force )
+auto PX_Rigid_Body_Physics::Linear_Accelereation()
 {
-	const float static_friction_force = static_friction * mass_data.mass * gravitational_const;
-	if ( force.force.GetLength() > static_friction_force * static_friction_force )
-	{
-		forces.emplace_back( force );
-	}
-}
-
-auto PX_Rigid_Body_Physics::Compute_Linear_Accelereation()
-{
-	FVec2 F_total = { 0.0f, 0.0f };
-	for ( const auto& f : forces ) F_total += f.force;
-
 	/* Frictional force with direction opposed to that of movement. */
-	F_total = F_total.GetNormalized().Negate() * kinetic_friction * mass_data.mass * gravitational_const;
+	auto f_friction = f_total.force.GetNormalized().Negate() * kinetic_drag;
 
-	return F_total / mass_data.mass;
+	return ( f_total.force - f_friction ) / mass_data.mass;
 }
 
-auto PX_Rigid_Body_Physics::Compute_Angular_Accelereation()
+auto PX_Rigid_Body_Physics::Angular_Accelereation() // may add torque static & kinetic drag consts
 {
-	float Trq_total = 0.0f;
-	for ( const auto& f : forces )
+	/* Frictional torque with direction of rotation opposed to that of rotation. */
+	float trq_friction = 0.0f;
+	if ( t_total.clockwise_flag() )
 	{
-		const IVec2 r = mass_data.mass_center - f.app_point;
-		Trq_total += Perp_Dot_Prod( r, f.force );
-	}
-
-	/* Frictional torque with direction opposed to that of rotation. */
-	if ( std::signbit( Trq_total ) )
-	{
-		Trq_total -= kinetic_friction * mass_data.I_cm * gravitational_const;
+		trq_friction = -( kinetic_friction * mass_data.I_cm * gravitational_const );
 	}
 	else
 	{
-		Trq_total += kinetic_friction * mass_data.I_cm * gravitational_const;
+		trq_friction = kinetic_friction * mass_data.I_cm * gravitational_const;
 	}
 
-	return Trq_total / mass_data.I_cm;
+	return ( t_total.trq - trq_friction ) / mass_data.I_cm;
+}
+
+void PX_Rigid_Body_Physics::Apply_Force( const PX_Force & force )
+{
+	if ( force.force.GetLength() > static_drag * static_drag  && kinetic_state.linear_vel.GetLength() == 0.0f )
+	{
+		f_total.force += force.force;
+	}
+	auto torque = Perp_Dot_Prod( mass_data.mass_center - force.app_point, force.force ); // Ouch, may be changed later
+	if ( std::fabs( torque ) > static_friction * mass_data.I_cm * gravitational_const && kinetic_state.angular_vel == 0.0f )
+	{
+		t_total.trq += torque;
+	}
+}
+
+void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
+{
+	kinetic_state.linear_vel = kinetic_state.linear_vel + Linear_Accelereation() * dt;
+	kinetic_state.angular_vel = kinetic_state.angular_vel + Angular_Accelereation() * dt;
 }

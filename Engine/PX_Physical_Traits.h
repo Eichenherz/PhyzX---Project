@@ -3,6 +3,7 @@
 #include "Vec2.h"
 #include <vector>
 #include "PX_Math.h"
+
 //======================================================================//
 //																		//
 //						PHYSICS SIMULATION DS							//
@@ -23,17 +24,26 @@ struct PX_Mass_Data
 	{}
 };
 
-struct PX_Kinetic_Data
+struct PX_Pose_Data
 {
 	IVec2			pos;
-	Angle_Degrees	orientation;
-	FVec2			linear_vel;
-	float			angular_vel;
+	Angle_Degrees	orientation;// Might be changed
 
-	PX_Kinetic_Data( const IVec2& pos, Angle_Degrees dgs, const FVec2& lvel = { 0.0f, 0.0f }, float avel = 0.0f )
+	PX_Pose_Data( const IVec2& pos, Angle_Degrees dgs )
 		:
 		pos				{ pos },
-		orientation		{ dgs },
+		orientation		{ dgs }
+	{}
+};
+
+struct PX_Kinetic_Data
+{
+	
+	FVec2	linear_vel;
+	float	angular_vel;
+
+	PX_Kinetic_Data( const FVec2& lvel = { 0.0f, 0.0f }, float avel = 0.0f )
+		:
 		linear_vel		{ lvel },
 		angular_vel		{ avel }
 	{}
@@ -41,8 +51,8 @@ struct PX_Kinetic_Data
 
 struct PX_Force
 {
-	FVec2 force;
-	IVec2 app_point;
+	FVec2	force;
+	IVec2	app_point;
 
 	PX_Force( const FVec2& f, const IVec2& app_point )
 		:
@@ -51,11 +61,25 @@ struct PX_Force
 	{}
 };
 
+struct PX_Torque // Work in progress
+{
+	float trq;
+
+	PX_Torque( const PX_Force& f, const IVec2& mass_ct )
+		:
+		trq		{ Perp_Dot_Prod( mass_ct - f.app_point, f.force ) }
+	{}
+
+	bool clockwise_flag() const
+	{
+		return std::signbit( trq );
+	}
+};
 
 class PX_Rigid_Body_Physics
 {
 public:
-			PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos, Angle_Degrees dgs );
+			PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos );
 
 	void	Apply_Force( const PX_Force& force );
 	void	Update_Kinetic_State( float dt );
@@ -64,8 +88,14 @@ public:
 private:
 	PX_Mass_Data			mass_data;
 	PX_Kinetic_Data			kinetic_state;
-	std::vector<PX_Force>	forces;
+	PX_Force				f_total;
+	PX_Torque				t_total;
 
-	auto Compute_Linear_Accelereation();
-	auto Compute_Angular_Accelereation();
+	const float				static_drag;
+	const float				kinetic_drag;
+
+
+
+	auto	Linear_Accelereation();
+	auto	Angular_Accelereation();
 };

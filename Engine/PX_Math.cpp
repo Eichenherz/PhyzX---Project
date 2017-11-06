@@ -9,6 +9,9 @@ Angle_Degrees::Angle_Degrees( float dgs )
 
 void Angle_Degrees::Normalize_360()
 {
-	if ( std::abs(degrees) > 360 )
-		degrees -= 360;
+	if ( std::fabs( degrees ) >= 360 )
+	{
+		if ( std::signbit( degrees ) ) degrees += 360;
+		else degrees -= 360;
+	}
 }

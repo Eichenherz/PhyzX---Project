@@ -2,8 +2,9 @@
 
 #include <cmath>
 
+
 template<typename T>
-class Vec2_
+class Vec2_//COLUMN VECTOR
 {
 public:
 	Vec2_() = default;
