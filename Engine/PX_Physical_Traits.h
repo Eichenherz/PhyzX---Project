@@ -52,13 +52,21 @@ struct PX_Kinetic_Data
 struct PX_Force
 {
 	FVec2	force;
-	IVec2	app_point;
+	IVec2	app_point; // torque data
 
 	PX_Force( const FVec2& f, const IVec2& app_point )
 		:
 		force		{ f },
 		app_point	{ app_point }
 	{}
+
+	void Make_NULL()
+	{
+		force.x = 0.0f;
+		force.y = 0.0f;
+		app_point.x = 0;
+		app_point.y = 0;
+	}
 };
 
 struct PX_Torque // Work in progress
@@ -74,6 +82,11 @@ struct PX_Torque // Work in progress
 	{
 		return std::signbit( trq );
 	}
+
+	void Make_NULL()
+	{
+		trq = 0.0f;
+	}
 };
 
 
@@ -88,6 +101,7 @@ public:
 			PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos );
 
 	void	Apply_Force( const PX_Force& force );
+	void	Halt_Force();
 	void	Update_Kinetic_State( float dt );
 	// Expose data to translate & rotate the box -> PX_Box_Shape to handle geometry & drawing
 

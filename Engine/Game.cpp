@@ -24,29 +24,31 @@
 Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
-	gfx( wnd ),
-	static_box{ { 100, 100 }, 20 },
-	moving_box{ { 150, 150 }, 20 }
+	gfx( wnd )
 {
-	IVec2 v;
-	auto v2 = v.GetNormalized();
 }
 
 void Game::Go()
 {
-	gfx.BeginFrame();	
-	UpdateModel();
+	gfx.BeginFrame();
+
+	float elapsed_time = ft.Mark();
+	while ( elapsed_time > 0.0f )
+	{
+		const float dt = std::min( euler_h, elapsed_time );
+		UpdateModel( dt );
+
+		elapsed_time -= dt;
+
+	}
+
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
-void Game::UpdateModel()
+void Game::UpdateModel( float dt )
 {
-	if ( AABB_Intersection( static_box.Get_AABB(),
-							moving_box.Get_AABB() ) )
-	{
-		hit.Play();
-	}
+	
 	// process arrow keys state
 	FVec2 dir = { 0.0f,0.0f };
 	if( wnd.kbd.KeyIsPressed( VK_UP ) )
@@ -65,11 +67,10 @@ void Game::UpdateModel()
 	{
 		dir.x += 1.0f;
 	}
-	moving_box.Move_Box( dir );
+	
 }
 
 void Game::ComposeFrame()
 {
-	static_box.Draw( gfx, Colors::Blue );
-	moving_box.Draw( gfx, Colors::Red );
+	
 }

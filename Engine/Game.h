@@ -23,9 +23,10 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
-#include "FrameTimer.h"
+#include "Timer.h"
 #include "Sound.h"
 #include "PX_Box_Shape.h"
+#include "PX_Physical_Traits.h"
 
 class Game
 {
@@ -36,7 +37,7 @@ public:
 	void Go();
 private:
 	void ComposeFrame();
-	void UpdateModel();
+	void UpdateModel( float dt );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -45,9 +46,9 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
-	FrameTimer ft;
-	PX_Box_Shape static_box;
-	PX_Box_Shape moving_box;
+	static constexpr float euler_h = 0.025f;
+	Timer ft;
+	
 	Sound hit = L"Sounds\\hit.wav";
 	/********************************/
 };

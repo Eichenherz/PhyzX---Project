@@ -37,6 +37,7 @@ auto PX_Rigid_Body_Physics::Angular_Accelereation() // may add torque static & k
 {
 	/* Frictional torque with direction of rotation opposed to that of rotation. */
 	float trq_friction = 0.0f;
+	//"Negate" t_total.Normalize() Ouch!!! Remember this is still pseudocode.
 	if ( t_total.clockwise_flag() )
 	{
 		trq_friction = -( kinetic_friction * mass_data.I_cm * gravitational_const );
@@ -51,10 +52,12 @@ auto PX_Rigid_Body_Physics::Angular_Accelereation() // may add torque static & k
 
 void PX_Rigid_Body_Physics::Apply_Force( const PX_Force & force )
 {
+	//Defeat the static friction first.
 	if ( force.force.GetLength() > static_drag * static_drag  && kinetic_state.linear_vel.GetLength() == 0.0f )
 	{
 		f_total.force += force.force;
 	}
+	//And the static torque friction.
 	auto torque = Perp_Dot_Prod( mass_data.mass_center - force.app_point, force.force ); // Ouch, may be changed later
 	if ( std::fabs( torque ) > static_friction * mass_data.I_cm * gravitational_const && kinetic_state.angular_vel == 0.0f )
 	{
@@ -62,8 +65,42 @@ void PX_Rigid_Body_Physics::Apply_Force( const PX_Force & force )
 	}
 }
 
+void PX_Rigid_Body_Physics::Halt_Force()
+{
+	//***
+	//You would not want to apply drag if there is no movement, wouldn't you ?
+	if ( kinetic_state.linear_vel.GetLength() != 0.0f ) 
+	{
+		//**
+		//If total applied force ceases , then the only remaing force is the drag, 
+		//which will slow down the body until it ceases to move.
+		f_total.force.Normalize().Negate() *= kinetic_drag;
+	}
+	//If no movement reset force. But still check for torque.
+	else f_total.Make_NULL();
+
+	//***
+	//Nor torque.
+	if ( kinetic_state.angular_vel != 0.0f )
+	{
+		//**
+		//Same for torque. No perpetuum mobile for you !
+		if ( t_total.clockwise_flag() )
+		{
+			t_total.trq = -( kinetic_friction * mass_data.I_cm * gravitational_const );
+		}
+		else
+		{
+			t_total.trq = kinetic_friction * mass_data.I_cm * gravitational_const;
+		}
+	}
+	else t_total.Make_NULL();
+	
+}
+
 void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 {
+	//Euler integrate accl to get vel.
 	kinetic_state.linear_vel = kinetic_state.linear_vel + Linear_Accelereation() * dt;
 	kinetic_state.angular_vel = kinetic_state.angular_vel + Angular_Accelereation() * dt;
 }
