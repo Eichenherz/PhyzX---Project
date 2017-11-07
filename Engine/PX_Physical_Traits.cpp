@@ -17,51 +17,50 @@ static constexpr float	gravitational_const = 10.0f;
 //===================================================//
 PX_Rigid_Body_Physics::PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos )
 	:
-	mass_data		{ mass, side, pos },
-	kinetic_state	{ /* Defaulted to no movement */ },
-	f_total			{ { 0.0f,0.0f }, { 0,0 } },
-	t_total			{ { { 0.0f,0.0f }, { 0,0 } }, mass_data.mass_center },
-	static_drag		{ static_friction * mass_data.mass * gravitational_const },
-	kinetic_drag	{ kinetic_friction * mass_data.mass * gravitational_const }
+	mass_data				{ mass, side, pos },
+	kinetic_state			{ { 0.0f, 0.0f }, 0.0f },
+	static_linear_drag		{ static_friction * mass_data.mass * gravitational_const },
+	kinetic_linear_drag		{ kinetic_friction * mass_data.mass * gravitational_const },
+	static_angular_drag		{ static_friction * mass_data.I * gravitational_const },
+	kinetic_angular_drag	{ kinetic_friction * mass_data.I * gravitational_const }
 {}
 
-auto PX_Rigid_Body_Physics::Linear_Accelereation()
+inline auto PX_Rigid_Body_Physics::Linear_Accelereation()
 {
 	/* Frictional force with direction opposed to that of movement. */
-	auto f_friction = f_total.force.GetNormalized().Negate() * kinetic_drag;
+	auto f_friction = resultant.force.GetNormalized().Negate() * kinetic_linear_drag;
 
-	return ( f_total.force - f_friction ) / mass_data.mass;
+	return ( resultant.force - f_friction ) / mass_data.mass;
 }
 
-auto PX_Rigid_Body_Physics::Angular_Accelereation() // may add torque static & kinetic drag consts
+inline auto PX_Rigid_Body_Physics::Angular_Accelereation() // may add torque static & kinetic drag consts
 {
 	/* Frictional torque with direction of rotation opposed to that of rotation. */
-	float trq_friction = 0.0f;
-	//"Negate" t_total.Normalize() Ouch!!! Remember this is still pseudocode.
-	if ( t_total.clockwise_flag() )
-	{
-		trq_friction = -( kinetic_friction * mass_data.I_cm * gravitational_const );
-	}
-	else
-	{
-		trq_friction = kinetic_friction * mass_data.I_cm * gravitational_const;
-	}
+	float trq_friction = std::copysign( kinetic_angular_drag, resultant.torque );
 
-	return ( t_total.trq - trq_friction ) / mass_data.I_cm;
+	return ( resultant.torque - trq_friction ) / mass_data.I;
 }
 
-void PX_Rigid_Body_Physics::Apply_Force( const PX_Force & force )
+void PX_Rigid_Body_Physics::Apply_Force( const FVec2& force, const IVec2& app_pt )
 {
 	//Defeat the static friction first.
-	if ( force.force.GetLength() > static_drag * static_drag  && kinetic_state.linear_vel.GetLength() == 0.0f )
+	if ( kinetic_state.linear_vel.GetLength() != 0.0f )
 	{
-		f_total.force += force.force;
+		resultant.force += force;
+	}
+	else if ( force.GetLength() > static_linear_drag * static_linear_drag )
+	{
+		resultant.force += force;
 	}
 	//And the static torque friction.
-	auto torque = Perp_Dot_Prod( mass_data.mass_center - force.app_point, force.force ); // Ouch, may be changed later
-	if ( std::fabs( torque ) > static_friction * mass_data.I_cm * gravitational_const && kinetic_state.angular_vel == 0.0f )
+	auto torque = Perp_Dot_Prod( mass_data.center - app_pt, force ); // Ouch, may be changed later
+	if ( kinetic_state.angular_vel != 0.0f )
 	{
-		t_total.trq += torque;
+		resultant.torque += torque;
+	}
+	else if ( std::fabs( torque ) > static_angular_drag )
+	{
+		resultant.torque += torque;
 	}
 }
 
@@ -74,10 +73,10 @@ void PX_Rigid_Body_Physics::Halt_Force()
 		//**
 		//If total applied force ceases , then the only remaing force is the drag, 
 		//which will slow down the body until it ceases to move.
-		f_total.force.Normalize().Negate() *= kinetic_drag;
+		resultant.force.Normalize().Negate() *= kinetic_linear_drag;
 	}
 	//If no movement reset force. But still check for torque.
-	else f_total.Make_NULL();
+	else resultant.force = { 0.0f, 0.0f };
 
 	//***
 	//Nor torque.
@@ -85,17 +84,10 @@ void PX_Rigid_Body_Physics::Halt_Force()
 	{
 		//**
 		//Same for torque. No perpetuum mobile for you !
-		if ( t_total.clockwise_flag() )
-		{
-			t_total.trq = -( kinetic_friction * mass_data.I_cm * gravitational_const );
-		}
-		else
-		{
-			t_total.trq = kinetic_friction * mass_data.I_cm * gravitational_const;
-		}
+		resultant.torque = std::copysign( kinetic_angular_drag, resultant.torque );
 	}
-	else t_total.Make_NULL();
-	
+	//Finally, if no rotation reset torque.
+	else resultant.torque = 0.0f;	
 }
 
 void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )

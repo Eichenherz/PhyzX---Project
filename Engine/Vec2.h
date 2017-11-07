@@ -100,8 +100,9 @@ public:
 	T y;
 };
 
-typedef Vec2_<float>	FVec2;
-typedef Vec2_<int>		IVec2;
+using FVec2 = Vec2_<float>;
+using IVec2 = Vec2_<int>;
+
 
 template<class Vec>
 float Dot_Prod( const Vec& vec1, const Vec& vec2 )
