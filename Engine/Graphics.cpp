@@ -322,6 +322,63 @@ void Graphics::PutPixel( int x,int y,Color c )
 	pSysBuffer[Graphics::ScreenWidth * y + x] = c;
 }
 
+void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
+{
+	const float	slope = float( p2.y - p1.y ) / float( p2.x - p1.x );
+
+	/* Particular cases */
+	if ( slope == 0.0f )
+	{
+		const int x_end = std::max( p1.x, p2.x );
+		for ( int x_start = std::min( p1.x, p2.x ); x_start < x_end; ++x_start )
+		{
+			PutPixel( x_start, p1.y, c );
+		}
+		return;
+	}
+	else if ( slope == INFINITY )
+	{
+		const int y_end = std::max( p1.y, p2.y );
+		for ( int y_start = std::min( p1.y, p2.y ); y_start < y_end; ++y_start )
+		{
+			PutPixel( p1.x, y_start, c );
+		}
+		return;
+	}
+
+	if( std::fabs(slope) > 1 )
+	{
+		const int y0 = std::min(p2.y, p1.y);
+		const int y_end = std::max( p2.y, p1.y );
+		const int x0 = std::min( p2.x, p1.x );
+		for (int y = y0; y < y_end; ++y )
+		{
+			const int x = int(1.0f / slope * ( y - y0 )) + x0;
+			PutPixel( x, y, c );
+		}
+	}
+	else
+	{
+		const int x0 = std::min( p2.x, p1.x );
+		const int x_end = std::max( p2.x, p1.x );
+		const int y0 = std::min( p2.y, p1.y );
+		for ( int x = x0; x < x_end; ++x )
+		{
+			const int y = int( slope * ( x - x0 ) ) + y0;
+			PutPixel( x, y, c );
+		}
+	}
+}
+
+void Graphics::Draw_Rect( const IVec2 & top_left, const IVec2 & bottom_right, Color c )
+{
+	Draw_Line( top_left, { bottom_right.x, top_left.y }, c );
+	Draw_Line( { bottom_right.x, top_left.y + 1 }, bottom_right, c );
+	Draw_Line( bottom_right + IVec2 {1,0}, { top_left.x, bottom_right.y }, c );
+	Draw_Line( { top_left.x, bottom_right.y + 1 }, top_left + IVec2 {0,1}, c );
+
+}
+
 Color Graphics::GetPixel( int x,int y ) const
 {
 	assert( x >= 0 );

@@ -63,7 +63,8 @@ public:
 		PutPixel( x,y,{ unsigned char( r ),unsigned char( g ),unsigned char( b ) } );
 	}
 	void		PutPixel( int x,int y,Color c );
-
+	void		Draw_Line( const IVec2& p1, const IVec2& p2, Color c );
+	void		Draw_Rect( const IVec2& top_left, const IVec2& bottom_right, Color c );
 	template<typename E>
 	void		DrawSprite( int x,int y,const Surface& s,E effect, bool reverse = false )
 	{
@@ -141,6 +142,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11SamplerState>			pSamplerState;
 	D3D11_MAPPED_SUBRESOURCE							mappedSysBufferTexture;
 	Color*                                              pSysBuffer = nullptr;
+
 
 public:
 	static constexpr int ScreenWidth = 800;
