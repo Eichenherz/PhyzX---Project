@@ -6,7 +6,7 @@
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 {
 	return	std::abs( b.center.x - a.center.x ) < ( b.radius + a.radius ) &&
-		std::abs( b.center.y - a.center.y ) < ( b.radius + a.radius );
+			std::abs( b.center.y - a.center.y ) < ( b.radius + a.radius );
 }
 
 //======================================================================//

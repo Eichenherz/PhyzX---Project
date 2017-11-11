@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vec2.h"
+#include "Matrix2.h"
 
 struct PX_AABB
 {
@@ -12,6 +13,12 @@ struct PX_AABB
 		radius { side / 2 },
 		center { pos.x + radius, pos.y + radius }
 	{}
+};
+
+struct PX_OBB
+{
+	IVec2		center;
+	RotMtrx2	orientation;
 };
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );

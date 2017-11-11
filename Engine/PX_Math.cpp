@@ -1,17 +1,45 @@
 #include "PX_Math.h"
 
-Angle_Degrees::Angle_Degrees( float dgs )
+constexpr float TWO_PI = 2 * M_PI;
+constexpr float DGS_360 = 360.0f;
+
+Degrees::Degrees( float dgs )
 	:
 	degrees { dgs }
 {
-	Normalize_360();
+	Normalize();
 }
 
-void Angle_Degrees::Normalize_360()
+void Degrees::Normalize()
 {
-	if ( std::fabs( degrees ) >= 360 )
+	if ( std::fabs( degrees ) >= DGS_360 )
 	{
-		if ( std::signbit( degrees ) ) degrees += 360;
-		else degrees -= 360;
+		degrees -= std::copysign( DGS_360, degrees );
+	}
+}
+
+Radians::Radians( float rads )
+	:
+	rads { rads }
+{
+	Normalize();
+}
+
+Radians::Radians( const Radians & r )
+	:
+	rads { r.rads }
+{}
+
+Radians & Radians::operator=( const Radians & r )
+{
+	this->rads = r.rads;
+	return *this;
+}
+
+void Radians::Normalize()
+{
+	if ( std::fabs( rads ) >= TWO_PI )
+	{
+		rads -= std::copysign( TWO_PI, rads );
 	}
 }

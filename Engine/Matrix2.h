@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vec2.h"
-
+#include <cassert>
 #include <algorithm>
 
 template<typename T>
@@ -11,7 +11,7 @@ public:
 				Matrix2() = default;
 				Matrix2( T a_11, T a_12, T a_21, T a_22 );
 
-	Matrix2		operator+ (const Matrix2& rhs) const;
+	Matrix2		operator+ ( const Matrix2& rhs ) const;
 	Matrix2&	operator+= ( const Matrix2& rhs );
 	Matrix2		operator- ( const Matrix2& rhs ) const;
 	Matrix2&	operator-= ( const Matrix2& rhs );
@@ -32,8 +32,22 @@ public:
 	Vec2_<S>&	operator*=( Vec2_<S>& rhs );
 
 private:
-	T  a11, a12, a21, a22;
+	T	a11, a12,
+		a21, a22;
 };
+
+using FMtrx2 = Matrix2<float>;
+using IMtrx2 = Matrix2<int>;
+class RotMtrx2 : public FMtrx2
+{
+	RotMtrx2() = default;
+	RotMtrx2( float theta )
+		:
+		FMtrx2( cosf( theta ), -(sinf( theta )), 
+				sinf( theta ), cosf( theta ) )
+	{}
+};
+
 
 template<typename T>
 Matrix2<T>::Matrix2( T a_11, T a_12, T a_21, T a_22 )
@@ -162,6 +176,8 @@ template<typename T>
 template<typename S>
 Vec2_<S> Matrix2<T>::operator*( const Vec2_<S>& rhs ) const
 {
+	assert( rhs.is_Column() );
+
 	return Vec2_<S>( a11 * rhs.x + a12 * rhs.y,
 					 a21 * rhs.x + a22 * rhs.y );
 }
@@ -170,8 +186,9 @@ template<typename T>
 template<typename S>
 Vec2_<S>& Matrix2<T>::operator*=( Vec2_<S>& rhs )
 {
+	assert( rhs.is_Column() );
+
 	rhs.x = a11 * rhs.x + a12 * rhs.y;
 	rhs.y = a21 * rhs.x + a22 * rhs.y;
-
 	return rhs;
 }

@@ -1,16 +1,30 @@
 #pragma once
 
-#include <math.h>
-#include "Vec2.h"
+#define _USE_MATH_DEFINES
 
-struct Angle_Degrees
+#include <cmath>
+
+
+struct Degrees
 {
 	float degrees;
 
 	//Work in progress. To be added as needed.
 
-			Angle_Degrees( float dgs );
+			Degrees( float dgs );
 
-	void	Normalize_360();
+	void	Normalize();
 };
 
+struct Radians
+{
+	float rads;
+
+				Radians() = default;
+				Radians( float rads );
+				Radians( const Radians& r );
+				~Radians() = default;
+	Radians&	operator=( const Radians& r );
+	//To be added as needed
+	void		Normalize();
+};

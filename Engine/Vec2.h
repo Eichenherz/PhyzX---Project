@@ -2,13 +2,18 @@
 
 #include <cmath>
 
+enum class Vec_Type
+{
+	COLUMN,
+	ROW
+};
 
-template<typename T>
-class Vec2_//COLUMN VECTOR
+template<typename T, Vec_Type t = Vec_Type::COLUMN>
+class Vec2_
 {
 public:
-	Vec2_() = default;
-	Vec2_( T x_in,T y_in )
+			Vec2_() = default;
+			Vec2_( T x_in,T y_in )
 		:
 		x( x_in ),
 		y( y_in )
@@ -19,63 +24,63 @@ public:
 		x( (T)src.x ),
 		y( (T)src.y )
 	{}
-	Vec2_ operator+( const Vec2_& rhs ) const
+	Vec2_	operator+( const Vec2_& rhs ) const
 	{
 		return Vec2_( *this ) += rhs;
 	}
-	Vec2_& operator+=( const Vec2_& rhs )
+	Vec2_&	operator+=( const Vec2_& rhs )
 	{
 		x += rhs.x;
 		y += rhs.y;
 		return *this;
 	}
-	Vec2_ operator-( const Vec2_& rhs ) const
+	Vec2_	operator-( const Vec2_& rhs ) const
 	{
 		return Vec2_( *this ) -= rhs;
 	}
-	Vec2_& operator-=( const Vec2_& rhs )
+	Vec2_&	operator-=( const Vec2_& rhs )
 	{
 		x -= rhs.x;
 		y -= rhs.y;
 		return *this;
 	}
-	Vec2_ operator*( T rhs ) const
+	Vec2_	operator*( T rhs ) const
 	{
 		return Vec2_( *this ) *= rhs;
 	}
-	Vec2_& operator*=( T rhs )
+	Vec2_&	operator*=( T rhs )
 	{
 		x *= rhs;
 		y *= rhs;
 		return *this;
 	}
-	Vec2_ operator/( T rhs ) const
+	Vec2_	operator/( T rhs ) const
 	{
 		return Vec2_( *this ) /= rhs;
 	}
-	Vec2_& operator/=( T rhs )
+	Vec2_&	operator/=( T rhs )
 	{
 		x /= rhs;
 		y /= rhs;
 		return *this;
 	}
-	Vec2_ operator-() const
+	Vec2_	operator-() const
 	{
 		return Vec2_( -x,-y );
 	}
-	T GetLength() const
+	T		GetLength() const
 	{
 		return (T)std::sqrt( GetLengthSq() );
 	}
-	T GetLengthSq() const
+	T		GetLengthSq() const
 	{
 		return x * x + y * y;
 	}
-	Vec2_& Normalize()
+	Vec2_&	Normalize()
 	{
 		return *this = GetNormalized();
 	}
-	Vec2_ GetNormalized() const
+	Vec2_	GetNormalized() const
 	{
 		const T len = GetLength();
 		if( len != (T)0 )
@@ -84,16 +89,21 @@ public:
 		}
 		return *this;
 	}
-	Vec2_ GetPerp() const
+	Vec2_	GetPerp() const
 	{
 		return { -this->y, this->x };
 	}
-	Vec2_& Negate()
+	Vec2_&	Negate()
 	{
 		this->x = -x;
 		this->y = -y;
 
 		return *this;
+	}
+
+	bool	is_Column() const
+	{
+		return t == Vec_Type::COLUMN;
 	}
 public:
 	T x;

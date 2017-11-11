@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Vec2.h"
-#include <vector>
 #include "PX_Math.h"
 
 //======================================================================//
@@ -26,9 +25,9 @@ struct PX_Mass_Data
 struct PX_Pose_Data
 {
 	IVec2			pos;
-	Angle_Degrees	orientation;// Data type Might be changed
+	Radians			orientation;
 
-	PX_Pose_Data( const IVec2& pos, Angle_Degrees dgs )
+	PX_Pose_Data( const IVec2& pos, Radians dgs )
 		:
 		pos				{ pos },
 		orientation		{ dgs }
@@ -66,7 +65,7 @@ public:
 	void	Apply_Force( const FVec2& force, const IVec2& app_pt );
 	void	Halt_Force();
 	void	Update_Kinetic_State( float dt );
-	// Expose data to translate & rotate the box -> PX_Box_Shape to handle geometry & drawing
+	// Expose data to translate & rotate the box -> PX_Box_Shape to handle geometry & drawing.
 
 private:
 	PX_Mass_Data			mass_data;
@@ -78,7 +77,7 @@ private:
 	const float				static_angular_drag;
 	const float				kinetic_angular_drag;
 
-
+	
 	auto	Linear_Accelereation();
 	auto	Angular_Accelereation();
 };

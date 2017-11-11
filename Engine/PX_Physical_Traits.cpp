@@ -27,40 +27,34 @@ PX_Rigid_Body_Physics::PX_Rigid_Body_Physics( float mass, int side, const IVec2&
 
 inline auto PX_Rigid_Body_Physics::Linear_Accelereation()
 {
-	/* Frictional force with direction opposed to that of movement. */
-	auto f_friction = resultant.force.GetNormalized().Negate() * kinetic_linear_drag;
-
-	return ( resultant.force - f_friction ) / mass_data.mass;
+	return resultant.force / mass_data.mass;
 }
 
-inline auto PX_Rigid_Body_Physics::Angular_Accelereation() // may add torque static & kinetic drag consts
+inline auto PX_Rigid_Body_Physics::Angular_Accelereation()
 {
-	/* Frictional torque with direction of rotation opposed to that of rotation. */
-	float trq_friction = std::copysign( kinetic_angular_drag, resultant.torque );
-
-	return ( resultant.torque - trq_friction ) / mass_data.I;
+	return resultant.torque / mass_data.I;
 }
 
 void PX_Rigid_Body_Physics::Apply_Force( const FVec2& force, const IVec2& app_pt )
 {
-	//Defeat the static friction first.
-	if ( kinetic_state.linear_vel.GetLength() != 0.0f )
+	//If moving or defeated static friction apply force.
+	if ( kinetic_state.linear_vel.GetLength() != 0.0f ||
+		 force.GetLength() > static_linear_drag * static_linear_drag )
 	{
 		resultant.force += force;
+		/* Frictional force with direction opposed to that of movement. */
+		auto f_friction = resultant.force.GetNormalized().Negate() * kinetic_linear_drag;
+		resultant.force += f_friction;
 	}
-	else if ( force.GetLength() > static_linear_drag * static_linear_drag )
-	{
-		resultant.force += force;
-	}
-	//And the static torque friction.
+	//Same for torque.
 	auto torque = Perp_Dot_Prod( mass_data.center - app_pt, force ); // Ouch, may be changed later
-	if ( kinetic_state.angular_vel != 0.0f )
+	if ( kinetic_state.angular_vel != 0.0f ||
+		 std::fabs( torque ) > static_angular_drag )
 	{
 		resultant.torque += torque;
-	}
-	else if ( std::fabs( torque ) > static_angular_drag )
-	{
-		resultant.torque += torque;
+		/* Frictional torque with direction of rotation opposed to that of rotation. */
+		float t_friction = std::copysign( kinetic_angular_drag, resultant.torque );
+		resultant.torque += t_friction;
 	}
 }
 
