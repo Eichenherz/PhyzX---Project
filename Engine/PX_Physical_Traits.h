@@ -60,12 +60,12 @@ struct PX_Dynamic_Data
 class PX_Rigid_Body_Physics
 {
 public:
-			PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos );
+							PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos );
 
-	void	Apply_Force( const FVec2& force, const IVec2& app_pt );
-	void	Halt_Force();
-	void	Update_Kinetic_State( float dt );
-	// Expose data to translate & rotate the box -> PX_Box_Shape to handle geometry & drawing.
+	void					Apply_Force( const FVec2& force, const IVec2& app_pt );
+	void					Halt_Force();
+	void					Update_Kinetic_State( float dt );
+	const PX_Kinetic_Data&	Kinetic_Status() const;
 
 private:
 	PX_Mass_Data			mass_data;
@@ -77,10 +77,9 @@ private:
 	const float				static_angular_drag;
 	const float				kinetic_angular_drag;
 
-	// Special force type
-	auto	Linear_Drag() const;
-	auto	Angular_Drag() const;
+	auto					Linear_Drag() const;
+	auto					Angular_Drag() const;
 
-	auto	Linear_Accelereation() const;
-	auto	Angular_Accelereation() const;
+	auto					Linear_Accelereation() const;
+	auto					Angular_Accelereation() const;
 };

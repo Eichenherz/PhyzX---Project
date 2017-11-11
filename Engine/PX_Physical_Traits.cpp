@@ -94,3 +94,8 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 	kinetic_state.linear_vel = kinetic_state.linear_vel + Linear_Accelereation() * dt;
 	kinetic_state.angular_vel = kinetic_state.angular_vel + Angular_Accelereation() * dt;
 }
+
+const PX_Kinetic_Data & PX_Rigid_Body_Physics::Kinetic_Status() const
+{
+	return kinetic_state;
+}
