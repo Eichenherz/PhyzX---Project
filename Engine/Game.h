@@ -47,6 +47,7 @@ private:
 	/********************************/
 	/*  User Variables              */
 	static constexpr float euler_h = 0.025f;
+
 	Timer ft;
 	
 	Sound hit = L"Sounds\\hit.wav";

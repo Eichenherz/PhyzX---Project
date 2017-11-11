@@ -5,7 +5,7 @@
 
 //======================================================================//
 //																		//
-//						PHYSICS SIMULATION DS							//
+//						PHYSICS DATA STRUCTURES							//
 //																		//
 //======================================================================//
 struct PX_Mass_Data
@@ -77,7 +77,10 @@ private:
 	const float				static_angular_drag;
 	const float				kinetic_angular_drag;
 
-	
-	auto	Linear_Accelereation();
-	auto	Angular_Accelereation();
+	// Special force type
+	auto	Linear_Drag() const;
+	auto	Angular_Drag() const;
+
+	auto	Linear_Accelereation() const;
+	auto	Angular_Accelereation() const;
 };

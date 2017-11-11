@@ -4,6 +4,7 @@
 #include <cassert>
 #include <algorithm>
 
+
 template<typename T>
 class Matrix2
 {
