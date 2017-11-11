@@ -24,7 +24,8 @@
 Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
-	gfx( wnd )
+	gfx( wnd ),
+	rot_test{ gfx.GetScreenRect().GetCenter(), 20}
 {
 }
 
@@ -32,45 +33,39 @@ void Game::Go()
 {
 	gfx.BeginFrame();
 
+	/*
 	float elapsed_time = ft.Mark();
 	while ( elapsed_time > 0.0f )
 	{
-		const float dt = std::min( euler_h, elapsed_time );
-		UpdateModel( dt );
+	const float dt = std::min( euler_h, elapsed_time );
 
-		elapsed_time -= dt;
+
+	elapsed_time -= dt;
 
 	}
-
+	*/
+	UpdateModel();
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
-void Game::UpdateModel( float dt )
+void Game::UpdateModel(  )
 {
+
 	
-	// process arrow keys state
-	FVec2 dir = { 0.0f,0.0f };
-	if( wnd.kbd.KeyIsPressed( VK_UP ) )
-	{
-		dir.y -= 1.0f;
-	}
-	if( wnd.kbd.KeyIsPressed( VK_DOWN ) )
-	{
-		dir.y += 1.0f;
-	}
 	if( wnd.kbd.KeyIsPressed( VK_LEFT ) )
 	{
-		dir.x -= 1.0f;
+		angle += Radians { -0.5f };
 	}
 	if( wnd.kbd.KeyIsPressed( VK_RIGHT ) )
 	{
-		dir.x += 1.0f;
+		angle += Radians { 0.5f };
 	}
 	
+	rot_test.Apply_Rotation( angle );
 }
 
 void Game::ComposeFrame()
 {
-	
+	rot_test.Draw( gfx, Colors::Red );
 }

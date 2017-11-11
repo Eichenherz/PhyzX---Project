@@ -30,7 +30,7 @@ public:
 	template<typename S>
 	Vec2_<S>	operator*( const Vec2_<S>& rhs ) const;
 	template<typename S>
-	Vec2_<S>&	operator*=( Vec2_<S>& rhs );
+	Vec2_<S>&	operator*=( Vec2_<S>& rhs ) const;
 
 private:
 	T	a11, a12,
@@ -39,15 +39,22 @@ private:
 
 using FMtrx2 = Matrix2<float>;
 using IMtrx2 = Matrix2<int>;
+
 class RotMtrx2 : public FMtrx2
 {
-	RotMtrx2() = default;
+public:
+	RotMtrx2()
+		:
+		FMtrx2	{ 1.0f, 0.0f, 
+				  0.0f, 1.0f }
+	{}
 	RotMtrx2( float theta )
 		:
-		FMtrx2( cosf( theta ), -(sinf( theta )), 
-				sinf( theta ), cosf( theta ) )
+		FMtrx2 { std::cos( theta ), -( std::sin( theta ) ),
+				 std::sin( theta ), std::cos( theta ) }
 	{}
 };
+
 
 
 template<typename T>
@@ -179,17 +186,17 @@ Vec2_<S> Matrix2<T>::operator*( const Vec2_<S>& rhs ) const
 {
 	assert( rhs.is_Column() );
 
-	return Vec2_<S>( a11 * rhs.x + a12 * rhs.y,
-					 a21 * rhs.x + a22 * rhs.y );
+	return Vec2_<S>( S(a11 * rhs.x + a12 * rhs.y),
+					 S(a21 * rhs.x + a22 * rhs.y ));
 }
 
 template<typename T>
 template<typename S>
-Vec2_<S>& Matrix2<T>::operator*=( Vec2_<S>& rhs )
+Vec2_<S>& Matrix2<T>::operator*=( Vec2_<S>& rhs ) const
 {
 	assert( rhs.is_Column() );
 
-	rhs.x = a11 * rhs.x + a12 * rhs.y;
-	rhs.y = a21 * rhs.x + a22 * rhs.y;
+	rhs.x = S(a11 * rhs.x + a12 * rhs.y);
+	rhs.y = S(a21 * rhs.x + a22 * rhs.y);
 	return rhs;
 }

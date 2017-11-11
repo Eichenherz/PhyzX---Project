@@ -2,6 +2,7 @@
 
 #include "Vec2.h"
 #include "Matrix2.h"
+#include "PX_Math.h"
 
 struct PX_AABB
 {
@@ -19,6 +20,14 @@ struct PX_OBB
 {
 	IVec2		center;
 	RotMtrx2	orientation;
+	int			radius;
+
+	PX_OBB( const IVec2& pos, int side, float theta = 0.0f )
+		:
+		radius			{ side / 2 },
+		center			{ pos.x + radius, pos.y + radius },
+		orientation		{ theta }
+	{}
 };
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
@@ -30,26 +39,25 @@ public:
 
 	bool		Collision_Test( const PX_Box_Shape& box ) const;
 	IVec2		Center() const;
-	void		Transformation( /* params */ const IVec2& displacement );
+	void		Transformation( const IVec2& displacement, float theta );
 	const int	Area() const;
 
 	/* METHODS FOR TESTING */
-	void				Draw( class Graphics& gfx, class Color c ) const;
-	const PX_AABB&		Get_AABB() const
-	{
-		return AABB;
-	}
-	void				Move_Box( const FVec2& new_pos)
+	void		Draw( class Graphics& gfx, class Color c ) const;
+	void		Move_Box( const FVec2& new_pos)
 	{
 		if ( new_pos.x != 0.0f )
-			AABB.center.x += int( new_pos.x );
+			OBB.center.x += int( new_pos.x );
 		if ( new_pos.y != 0.0f )
-			AABB.center.y += int( new_pos.y );
+			OBB.center.y += int( new_pos.y );
 	}
-
+	void		Apply_Rotation( Radians r )
+	{
+		OBB.orientation = RotMtrx2( r.rads );
+	}
 private:
-	PX_AABB AABB;
+	PX_OBB OBB;
 
-	void Rotate();
+	void Rotate( float theta );
 	void Translate( const IVec2& displacement );
 };

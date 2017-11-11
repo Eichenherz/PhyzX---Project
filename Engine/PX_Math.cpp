@@ -36,6 +36,18 @@ Radians & Radians::operator=( const Radians & r )
 	return *this;
 }
 
+Radians Radians::operator+( const Radians & r ) const
+{
+	return Radians( rads + r.rads );
+}
+
+Radians& Radians::operator+=( const Radians & r )
+{
+	this->rads += r.rads;
+	Normalize();
+	return *this;
+}
+
 void Radians::Normalize()
 {
 	if ( std::fabs( rads ) >= TWO_PI )

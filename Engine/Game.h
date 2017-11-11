@@ -37,7 +37,7 @@ public:
 	void Go();
 private:
 	void ComposeFrame();
-	void UpdateModel( float dt );
+	void UpdateModel(  );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -49,7 +49,8 @@ private:
 	static constexpr float euler_h = 0.025f;
 
 	Timer ft;
-	
+	Radians angle = 0.0f;
+	PX_Box_Shape rot_test;
 	Sound hit = L"Sounds\\hit.wav";
 	/********************************/
 };
