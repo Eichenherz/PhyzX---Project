@@ -25,7 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	rot_test{ gfx.GetScreenRect().GetCenter(), 20}
+	rot_test{ gfx.GetScreenRect().GetCenter(), 50}
 {
 }
 
