@@ -50,19 +50,30 @@ void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 	const int y_end	  = OBB.center.y + OBB.radius;
 
 	IVec2 A { x_start, y_start };
+	IVec2 B { x_start, y_end };
+	IVec2 C { x_end, y_start };
 	IVec2 D { x_end, y_end };
+
+	//IVec2 A = OBB.center - IVec2 { OBB.radius, OBB.radius };
+	//IVec2 B = A + IVec2 { 0, OBB.radius };
 
 	// Obj coord space
 	A -= OBB.center;
+	B -= OBB.center;
+	C -= OBB.center;
 	D -= OBB.center;
 	//Rotate
 	OBB.orientation *= A;
+	OBB.orientation *= B;
+	OBB.orientation *= C;
 	OBB.orientation *= D;
 	// Back to world coord
 	A += OBB.center;
+	B += OBB.center;
+	C += OBB.center;
 	D += OBB.center;
 
-	gfx.Draw_Rect( A, D, c );
+	gfx.Draw_Quad( A, B, C, D, c );
 }
 
 void PX_Box_Shape::Rotate( float theta )

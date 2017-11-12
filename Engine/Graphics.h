@@ -64,7 +64,8 @@ public:
 	}
 	void		PutPixel( int x,int y,Color c );
 	void		Draw_Line( const IVec2& p1, const IVec2& p2, Color c );
-	void		Draw_Rect( const IVec2& top_left, const IVec2& bottom_right, Color c );
+	void		Draw_Rect( const IVec2& top_left, const IVec2& bottom_right, Color c ); // Use for AABB
+	void		Draw_Quad( const IVec2& A, const IVec2& B, const IVec2& C, const IVec2& D, Color c );// Use for OBB
 	template<typename E>
 	void		DrawSprite( int x,int y,const Surface& s,E effect, bool reverse = false )
 	{

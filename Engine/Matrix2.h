@@ -172,6 +172,8 @@ template<typename T>
 Matrix2<T>& Matrix2<T>::transpoze()
 {
 	std::swap( a12, a21 );
+
+	return *this;
 }
 
 template<typename T>

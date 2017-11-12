@@ -26,6 +26,7 @@
 #include <string>
 #include <array>
 #include <algorithm>
+#include <limits>
 
 // Ignore the intellisense error "cannot open source file" for .shh files.
 // They will be created during the build sequence before the preprocessor runs.
@@ -336,7 +337,7 @@ void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
 		}
 		return;
 	}
-	else if ( slope == INFINITY )
+	else if ( slope == std::numeric_limits<float>::infinity() )
 	{
 		const int y_end = std::max( p1.y, p2.y );
 		for ( int y_start = std::min( p1.y, p2.y ); y_start < y_end; ++y_start )
@@ -370,14 +371,31 @@ void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
 	}
 }
 
-void Graphics::Draw_Rect( const IVec2 & top_left, const IVec2 & bottom_right, Color c )
+void Graphics::Draw_Rect( const IVec2 & top_left, const IVec2 & bottom_right, Color c ) //AABB
 {
 	Draw_Line( top_left, { bottom_right.x, top_left.y }, c );
 	Draw_Line( { bottom_right.x, top_left.y + 1 }, bottom_right, c );
 	Draw_Line( bottom_right + IVec2 {1,0}, { top_left.x, bottom_right.y }, c );
 	Draw_Line( { top_left.x, bottom_right.y + 1 }, top_left + IVec2 {0,1}, c );
-
 }
+
+void Graphics::Draw_Quad( const IVec2 & A, const IVec2 & B, const IVec2 & C, const IVec2 & D, Color c )//OBB
+{
+	/*	   ORIENTATION
+	*=======================
+	*		D------B
+	*		--------
+	*		--------
+	*		C------A
+	*=======================
+	*/
+
+	Draw_Line( A, B, c );
+	//Draw_Line( B, D, c );
+	//Draw_Line( D, C, c );
+	//Draw_Line( C, A, c );
+}
+
 
 Color Graphics::GetPixel( int x,int y ) const
 {

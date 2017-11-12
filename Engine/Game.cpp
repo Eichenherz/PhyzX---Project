@@ -51,15 +51,13 @@ void Game::Go()
 
 void Game::UpdateModel(  )
 {
-
-	
 	if( wnd.kbd.KeyIsPressed( VK_LEFT ) )
 	{
-		angle += Radians { -0.5f };
+		angle += Radians { -0.25f };
 	}
 	if( wnd.kbd.KeyIsPressed( VK_RIGHT ) )
 	{
-		angle += Radians { 0.5f };
+		angle += Radians { 0.25f };
 	}
 	
 	rot_test.Apply_Rotation( angle );
