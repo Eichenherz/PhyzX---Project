@@ -188,8 +188,11 @@ Vec2_<S> Matrix2<T>::operator*( const Vec2_<S>& rhs ) const
 {
 	assert( rhs.is_Column() );
 
-	return Vec2_<S>( S(a11 * rhs.x + a12 * rhs.y),
-					 S(a21 * rhs.x + a22 * rhs.y ));
+	auto rhs_x = rhs.x;
+	auto rhs_y = rhs.y;
+
+	return Vec2_<S>( S( a11 * rhs_x + a12 * rhs_y ),
+					 S( a21 * rhs_x + a22 * rhs_y ) );
 }
 
 template<typename T>
@@ -198,7 +201,10 @@ Vec2_<S>& Matrix2<T>::operator*=( Vec2_<S>& rhs ) const
 {
 	assert( rhs.is_Column() );
 
-	rhs.x = S(a11 * rhs.x + a12 * rhs.y);
-	rhs.y = S(a21 * rhs.x + a22 * rhs.y);
+	auto rhs_x = rhs.x;
+	auto rhs_y = rhs.y;
+
+	rhs.x = S( a11 * rhs_x + a12 * rhs_y );
+	rhs.y = S( a21 * rhs_x + a22 * rhs_y );
 	return rhs;
 }

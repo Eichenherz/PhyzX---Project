@@ -44,29 +44,17 @@ void PX_Box_Shape::Transformation( const IVec2& displacement, float theta )
 
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 {
-	//const int x_start = OBB.center.x - OBB.radius;
-	//const int y_start = OBB.center.y - OBB.radius;
-	//const int x_end	  = OBB.center.x + OBB.radius;
-	//const int y_end	  = OBB.center.y + OBB.radius;
-
 	IVec2 A {  OBB.radius,  OBB.radius };
 	IVec2 B { -OBB.radius,  OBB.radius };
 	IVec2 C {  OBB.radius, -OBB.radius };
 	IVec2 D { -OBB.radius, -OBB.radius };
 
-	//IVec2 A = OBB.center - IVec2 { OBB.radius, OBB.radius };
-	//IVec2 B = A + IVec2 { 0, OBB.radius };
-
-	// Obj coord space
-	//A -= OBB.center;
-	//B -= OBB.center;
-	//C -= OBB.center;
-	//D -= OBB.center;
 	//Rotate
 	OBB.orientation *= A;
 	OBB.orientation *= B;
 	OBB.orientation *= C;
 	OBB.orientation *= D;
+
 	// Back to world coord
 	A += OBB.center;
 	B += OBB.center;

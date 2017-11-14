@@ -327,45 +327,37 @@ void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
 {
 	const float	slope = float( p2.y - p1.y ) / float( p2.x - p1.x );
 
-	/* Particular cases */
-	if ( slope == 0.0f )
-	{
-		const int x_end = std::max( p1.x, p2.x );
-		for ( int x_start = std::min( p1.x, p2.x ); x_start < x_end; ++x_start )
-		{
-			PutPixel( x_start, p1.y, c );
-		}
-		return;
-	}
-	else if ( slope == std::numeric_limits<float>::infinity() )
-	{
-		const int y_end = std::max( p1.y, p2.y );
-		for ( int y_start = std::min( p1.y, p2.y ); y_start < y_end; ++y_start )
-		{
-			PutPixel( p1.x, y_start, c );
-		}
-		return;
-	}
+	int y0 = p1.y;
+	int y_end = p2.y;
+	int x0 = p1.x;
+	int x_end = p2.x;
 
-	if( std::fabs(slope) > 1 )
+	if ( std::fabs( slope ) > 1.0f )
 	{
-		const int y0 = std::min(p2.y, p1.y);
-		const int y_end = std::max( p2.y, p1.y );
-		const int x0 = std::min( p2.x, p1.x );
-		for (int y = y0; y < y_end; ++y )
+		if ( y0 > y_end )
 		{
-			const int x = int(1.0f / slope * ( y - y0 )) + x0;
+			std::swap( y0, y_end );
+			std::swap( x0, x_end );
+		}
+
+		const float inv_slope = 1.0f / slope;
+		for ( int y = y0; y < y_end; ++y )
+		{
+			const int x = int( inv_slope * ( y - y0 ) + float( x0 ) );
 			PutPixel( x, y, c );
 		}
 	}
 	else
 	{
-		const int x0 = std::min( p2.x, p1.x );
-		const int x_end = std::max( p2.x, p1.x );
-		const int y0 = std::min( p2.y, p1.y );
+		if ( x0 > x_end )
+		{
+			std::swap( y0, y_end );
+			std::swap( x0, x_end );
+		}
+
 		for ( int x = x0; x < x_end; ++x )
 		{
-			const int y = int( slope * ( x - x0 ) ) + y0;
+			const int y = int( slope * ( x - x0 ) + float( y0 ) );
 			PutPixel( x, y, c );
 		}
 	}
@@ -391,9 +383,9 @@ void Graphics::Draw_Quad( const IVec2 & A, const IVec2 & B, const IVec2 & C, con
 	*/
 
 	Draw_Line( A, B, c );
-	//Draw_Line( B, D, c );
-	//Draw_Line( D, C, c );
-	//Draw_Line( C, A, c );
+	Draw_Line( B, D, c );
+	Draw_Line( D, C, c );
+	Draw_Line( C, A, c );
 }
 
 
