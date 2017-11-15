@@ -354,7 +354,6 @@ void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
 			std::swap( y0, y_end );
 			std::swap( x0, x_end );
 		}
-
 		for ( int x = x0; x < x_end; ++x )
 		{
 			const int y = int( slope * ( x - x0 ) + float( y0 ) );

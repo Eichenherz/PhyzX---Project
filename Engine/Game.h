@@ -35,22 +35,30 @@ public:
 	Game( const Game& ) = delete;
 	Game& operator=( const Game& ) = delete;
 	void Go();
+
 private:
 	void ComposeFrame();
-	void UpdateModel(  );
+	void UpdateModel( float dt );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
+
 private:
-	MainWindow& wnd;
-	Graphics gfx;
+	MainWindow&				wnd;
+	Graphics				gfx;
 	/********************************/
 	/*  User Variables              */
-	static constexpr float euler_h = 0.025f;
+	static constexpr float	euler_h = 0.025f;
+	Timer					ft;
 
-	Timer ft;
-	Radians angle = 0.0f;
-	PX_Box_Shape rot_test;
-	Sound hit = L"Sounds\\hit.wav";
+	static constexpr int	box_side = 40;
+	static constexpr float	mass = 25.0f;
+	Radians					angle = 0.0f;
+
+	PX_Pose_Data			pose;
+	PX_Box_Shape			box;
+	PX_Rigid_Body_Physics	phyzx;
+
+	Sound					hit = L"Sounds\\hit.wav";
 	/********************************/
 };

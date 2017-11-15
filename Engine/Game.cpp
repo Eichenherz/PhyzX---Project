@@ -23,9 +23,11 @@
 
 Game::Game( MainWindow& wnd )
 	:
-	wnd( wnd ),
-	gfx( wnd ),
-	rot_test{ gfx.GetScreenRect().GetCenter(), 50}
+	wnd		( wnd ),
+	gfx		( wnd ),
+	pose	{ gfx.GetScreenRect().GetCenter(), angle },
+	box		{ pose.pos, box_side },
+	phyzx	{ mass, box_side, box.Center() }
 {
 }
 
@@ -33,37 +35,45 @@ void Game::Go()
 {
 	gfx.BeginFrame();
 
-	/*
 	float elapsed_time = ft.Mark();
 	while ( elapsed_time > 0.0f )
 	{
-	const float dt = std::min( euler_h, elapsed_time );
+		const float dt = std::min( euler_h, elapsed_time );
+		UpdateModel( dt );
 
-
-	elapsed_time -= dt;
-
+		elapsed_time -= dt;
 	}
-	*/
-	UpdateModel();
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
-void Game::UpdateModel(  )
+void Game::UpdateModel( float dt )
 {
-	if( wnd.kbd.KeyIsPressed( VK_LEFT ) )
+	//FVec2 f { 2000.0f, 3000.0f }; // Undesired vibration.
+	//FVec2 f { 3000.0f, 4000.0f };
+	//FVec2 f { 4000.0f, 5000.0f };
+	FVec2 f { 20000.0f, 30000.0f };
+	auto l = f.GetLength();
+	if ( wnd.mouse.LeftIsPressed() )
 	{
-		angle += Radians { -0.05f };
+		phyzx.Apply_Force(f , box.Center() + IVec2 { box_side / 2, box_side / 8 } );
 	}
-	if( wnd.kbd.KeyIsPressed( VK_RIGHT ) )
+
+	if ( wnd.mouse.RightIsPressed() )
 	{
-		angle += Radians { 0.05f };
+		phyzx.Halt_Force();
 	}
-	
-	rot_test.Apply_Rotation( angle );
+	phyzx.Update_Kinetic_State( dt );
+	//
+	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
+	pose.orientation = phyzx.Kinetic_Status().angular_vel * dt;
+
+	box.Transform( {IVec2( phyzx.Kinetic_Status().linear_vel * dt ),
+				   phyzx.Kinetic_Status().angular_vel * dt
+} );
 }
 
 void Game::ComposeFrame()
 {
-	rot_test.Draw( gfx, Colors::Red );
+	box.Draw( gfx, Colors::Red );
 }

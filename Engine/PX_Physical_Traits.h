@@ -60,7 +60,7 @@ struct PX_Dynamic_Data
 class PX_Rigid_Body_Physics
 {
 public:
-							PX_Rigid_Body_Physics( float mass, int side, const IVec2& pos );
+							PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct );
 
 	void					Apply_Force( const FVec2& force, const IVec2& app_pt );
 	void					Halt_Force();
@@ -76,6 +76,8 @@ private:
 	const float				kinetic_linear_drag;
 	const float				static_angular_drag;
 	const float				kinetic_angular_drag;
+
+
 
 	auto					Linear_Drag() const;
 	auto					Angular_Drag() const;

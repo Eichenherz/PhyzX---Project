@@ -22,11 +22,11 @@ struct PX_OBB
 	RotMtrx2	orientation;
 	int			radius;
 
-	PX_OBB( const IVec2& pos, int side, float theta = 0.0f )
+	PX_OBB( const IVec2& pos, int side, const Radians& theta = Radians { 0.0f } )
 		:
 		radius			{ side / 2 },
 		center			{ pos.x + radius, pos.y + radius },
-		orientation		{ theta }
+		orientation		{ theta.rads }
 	{}
 };
 
@@ -35,29 +35,16 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
 class PX_Box_Shape 
 {
 public:
-				PX_Box_Shape( IVec2 pos, int side );
+					PX_Box_Shape( const IVec2& pos, int side );
 
-	bool		Collision_Test( const PX_Box_Shape& box ) const;
-	IVec2		Center() const;
-	void		Transformation( const IVec2& displacement, float theta );
-	const int	Area() const;
+	bool			Collision_Test( const PX_Box_Shape& box ) const;
+	const IVec2&	Center() const;
+	void			Transform( const struct PX_Pose_Data& pose );
+	void			Draw( class Graphics& gfx, class Color c ) const;
 
-	/* METHODS FOR TESTING */
-	void		Draw( class Graphics& gfx, class Color c ) const;
-	void		Move_Box( const FVec2& new_pos)
-	{
-		if ( new_pos.x != 0.0f )
-			OBB.center.x += int( new_pos.x );
-		if ( new_pos.y != 0.0f )
-			OBB.center.y += int( new_pos.y );
-	}
-	void		Apply_Rotation( Radians r )
-	{
-		OBB.orientation = RotMtrx2( r.rads );
-	}
 private:
 	PX_OBB OBB;
 
-	void Rotate( float theta );
-	void Translate( const IVec2& displacement );
+	void			Rotate( const Radians& theta );
+	void			Translate( const IVec2& displacement );
 };

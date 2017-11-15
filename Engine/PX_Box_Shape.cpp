@@ -1,4 +1,5 @@
 #include "PX_Box_Shape.h"
+#include "PX_Physical_Traits.h"
 #include <math.h>
 #include "Graphics.h"
 
@@ -15,7 +16,7 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 //						  PX_Box_Shape									//
 //																		//
 //======================================================================//
-PX_Box_Shape::PX_Box_Shape( IVec2 pos, int side )
+PX_Box_Shape::PX_Box_Shape( const IVec2& pos, int side )
 	:
 	OBB { pos, side }
 {}
@@ -31,15 +32,15 @@ bool PX_Box_Shape::Collision_Test( const PX_Box_Shape& box ) const
 	return false;
 }
 
-IVec2 PX_Box_Shape::Center() const
+const IVec2& PX_Box_Shape::Center() const
 {
 	return OBB.center;
 }
 
-void PX_Box_Shape::Transformation( const IVec2& displacement, float theta )
+void PX_Box_Shape::Transform( const PX_Pose_Data& pose )
 {
-	Rotate( theta );
-	Translate( displacement );
+	Translate( pose.pos );
+	Rotate( pose.orientation );
 }
 
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
@@ -64,12 +65,12 @@ void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 	gfx.Draw_Quad( A, B, C, D, c );
 }
 
-void PX_Box_Shape::Rotate( float theta )
-{
-}
-
 void PX_Box_Shape::Translate( const IVec2& displacement )
 {
-
+	OBB.center += displacement;
 }
 
+void PX_Box_Shape::Rotate( const Radians& theta )
+{
+	OBB.orientation = RotMtrx2( theta.rads );
+}
