@@ -3,6 +3,7 @@
 #include "Vec2.h"
 #include "Matrix2.h"
 #include "PX_Math.h"
+#include <array>
 
 struct PX_AABB
 {
@@ -18,16 +19,19 @@ struct PX_AABB
 
 struct PX_OBB
 {
-	IVec2		center;
-	RotMtrx2	orientation;
-	int			radius;
+	IVec2				center;
+	RotMtrx2			orientation;
+	std::array<int, 2>	half_lenght;
 
-	PX_OBB( const IVec2& pos, int side, const Radians& theta = Radians { 0.0f } )
+	PX_OBB( const IVec2& center, int width,
+			int height = 0, const Radians& theta = Radians { 0.0f } )
 		:
-		radius			{ side / 2 },
-		center			{ pos.x + radius, pos.y + radius },
-		orientation		{ theta.rads }
-	{}
+		center { center },
+		orientation { theta.rads }
+	{
+		half_lenght [0] = width / 2;
+		half_lenght [1] = height / 2;
+	}
 };
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );

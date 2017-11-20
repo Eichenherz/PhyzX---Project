@@ -259,6 +259,8 @@ RectI Graphics::GetScreenRect()
 	return{ 0,ScreenWidth,0,ScreenHeight };
 }
 
+
+
 void Graphics::EndFrame()
 {
 	HRESULT hr;

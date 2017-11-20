@@ -150,5 +150,6 @@ public:
 	static constexpr int ScreenHeight = 600;
 
 
-	static RectI GetScreenRect();
+	static RectI			GetScreenRect();
+	//static struct PX_OBB	Screen_OBB();
 };

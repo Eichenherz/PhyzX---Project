@@ -151,6 +151,7 @@
     <ClInclude Include="Matrix2.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="PX_Box_Shape.h" />
+    <ClInclude Include="PX_Collision.h" />
     <ClInclude Include="PX_Math.h" />
     <ClInclude Include="PX_Physical_Traits.h" />
     <ClInclude Include="PX_Shape.h" />

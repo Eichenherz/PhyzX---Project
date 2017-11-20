@@ -3,12 +3,12 @@
 #include <math.h>
 #include "Graphics.h"
 
-/*  COLLISION OF 2 AABBs  */
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 {
 	return	std::abs( b.center.x - a.center.x ) < ( b.radius + a.radius ) &&
-			std::abs( b.center.y - a.center.y ) < ( b.radius + a.radius );
+		std::abs( b.center.y - a.center.y ) < ( b.radius + a.radius );
 }
+
 
 //======================================================================//
 //																		//
@@ -21,14 +21,8 @@ PX_Box_Shape::PX_Box_Shape( const IVec2& pos, int side )
 	OBB { pos, side }
 {}
 
-//==============================================================//
-//																//
-//		COLLISION OF EMBEDDED AABB & OTHER EMBEDDED AABB:		//
-//																//
-//==============================================================//
 bool PX_Box_Shape::Collision_Test( const PX_Box_Shape& box ) const
 {
-	//return	AABB_Intersection( this->AABB, box.AABB );
 	return false;
 }
 
@@ -45,10 +39,10 @@ void PX_Box_Shape::Transform( const PX_Pose_Data& pose )
 
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 {
-	IVec2 A {  OBB.radius,  OBB.radius };
-	IVec2 B { -OBB.radius,  OBB.radius };
-	IVec2 C {  OBB.radius, -OBB.radius };
-	IVec2 D { -OBB.radius, -OBB.radius };
+	IVec2 A {  OBB.half_lenght[0],   OBB.half_lenght [0] };
+	IVec2 B { -OBB.half_lenght [0],  OBB.half_lenght [0] };
+	IVec2 C {  OBB.half_lenght [0], -OBB.half_lenght [0] };
+	IVec2 D { -OBB.half_lenght [0], -OBB.half_lenght [0] };
 
 	//Rotate
 	OBB.orientation *= A;

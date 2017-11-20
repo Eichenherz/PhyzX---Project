@@ -77,8 +77,6 @@ private:
 	const float				static_angular_drag;
 	const float				kinetic_angular_drag;
 
-
-
 	auto					Linear_Drag() const;
 	auto					Angular_Drag() const;
 

@@ -121,6 +121,11 @@ float Dot_Prod( const Vec& vec1, const Vec& vec2 )
 }
 
 template<class IVec, class FVec>
+FVec2 Cross_Prod( const IVec& vec1, const FVec& vec2 )
+{
+}
+
+template<class IVec, class FVec>
 float Perp_Dot_Prod( const IVec& vec1, const FVec& vec2 )
 {
 	auto perp_v1 = vec1.GetPerp();

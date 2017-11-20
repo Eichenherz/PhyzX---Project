@@ -49,14 +49,33 @@ void Game::Go()
 
 void Game::UpdateModel( float dt )
 {
-	//FVec2 f { 2000.0f, 3000.0f }; // Undesired vibration.
+	FVec2 f { 120.0f, 120.0f }; // Undesired vibration.
 	//FVec2 f { 3000.0f, 4000.0f };
 	//FVec2 f { 4000.0f, 5000.0f };
-	FVec2 f { 20000.0f, 30000.0f };
+	//FVec2 f { 20000.0f, 30000.0f };
+	FVec2 g = -f;
+	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )
+	{		
+		f += FVec2 { -100.0f, 0.0f };
+	}
+	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) )
+	{
+		f += FVec2 { 100.0f, 0.0f };
+	}
+	if ( wnd.kbd.KeyIsPressed( VK_UP ) )
+	{
+		f += FVec2 { 0.0f, -100.0f };
+	}
+	if ( wnd.kbd.KeyIsPressed( VK_DOWN ) )
+	{
+		f += FVec2 { 0.0f,  100.0f };
+	}
+
 	auto l = f.GetLength();
 	if ( wnd.mouse.LeftIsPressed() )
 	{
-		phyzx.Apply_Force(f , box.Center() + IVec2 { box_side / 2, box_side / 8 } );
+		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side / 2, box_side / 8 } );
+		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side / 2, -box_side / 8 } );
 	}
 
 	if ( wnd.mouse.RightIsPressed() )

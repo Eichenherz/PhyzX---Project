@@ -7,7 +7,7 @@
 //												     //
 //===================================================//
 static constexpr float	kinetic_friction = 0.15f;
-static constexpr float	static_friction = 0.25f;
+static constexpr float	static_friction = 0.05f;
 static constexpr float	gravitational_const = 10.0f;
 
 //===================================================//
@@ -43,14 +43,14 @@ void PX_Rigid_Body_Physics::Apply_Force( const FVec2& force, const IVec2& app_pt
 {
 	//If moving or defeated static friction apply force.
 	if ( kinetic_state.linear_vel.GetLength() != 0.0f ||
-		 force.GetLength() > static_linear_drag * static_linear_drag )
+		 ( resultant.force + force ).GetLength() > static_linear_drag * static_linear_drag )
 	{
 		resultant.force += force;
 	}
 	//Same for torque.
-	auto torque = Perp_Dot_Prod( mass_data.center - app_pt, force ); // Ouch, may be changed later
+	auto torque = Perp_Dot_Prod( mass_data.center - app_pt, force );
 	if ( kinetic_state.angular_vel != 0.0f ||
-		 std::fabs( torque ) > static_angular_drag )
+		 std::fabs( torque + resultant.torque ) > static_angular_drag )
 	{
 		resultant.torque += torque;
 	}
@@ -96,7 +96,10 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 {
 	//Euler integrate accl to get vel.
 	kinetic_state.linear_vel += Linear_Accelereation() * dt;
-	kinetic_state.angular_vel += Angular_Accelereation() * dt;
+	if ( resultant.torque != Angular_Drag()  )
+	{
+		kinetic_state.angular_vel += Angular_Accelereation() * dt;
+	}
 }
 
 const PX_Kinetic_Data& PX_Rigid_Body_Physics::Kinetic_Status() const
