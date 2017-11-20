@@ -66,6 +66,7 @@ public:
 	void					Halt_Force();
 	void					Update_Kinetic_State( float dt );
 	const PX_Kinetic_Data&	Kinetic_Status() const;
+	PX_Kinetic_Data&		Kinetic_Status();
 
 private:
 	PX_Mass_Data			mass_data;

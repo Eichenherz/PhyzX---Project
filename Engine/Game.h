@@ -48,7 +48,7 @@ private:
 	Graphics				gfx;
 	/********************************/
 	/*  User Variables              */
-	static constexpr float	euler_h = 0.025f;
+	static constexpr float	euler_h = 0.015f;
 	Timer					ft;
 
 	static constexpr int	box_side = 30;
