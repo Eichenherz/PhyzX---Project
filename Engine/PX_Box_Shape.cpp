@@ -2,11 +2,30 @@
 #include "PX_Physical_Traits.h"
 #include <math.h>
 #include "Graphics.h"
+#include "array"
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 {
-	return	std::abs( b.center.x - a.center.x ) < ( b.radius + a.radius ) &&
-		std::abs( b.center.y - a.center.y ) < ( b.radius + a.radius );
+	return	
+		std::abs( b.center.x - a.center.x ) < ( b.half_lengths.x + a.half_lengths.x ) &&
+		std::abs( b.center.y - a.center.y ) < ( b.half_lengths.y + a.half_lengths.y );
+}
+
+bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
+{
+	auto temp = b.half_lengths;
+	b.orientation.inverted() *= temp;
+	a.orientation *= temp;
+
+	auto flag_a = AABB_Intersection( a.Make_AABB(), PX_AABB { b.center, temp.x,temp.y } );
+
+	temp = a.half_lengths;
+	a.orientation.inverted() *= temp;
+	b.orientation *= temp;
+
+	auto flag_b = AABB_Intersection( b.Make_AABB(), PX_AABB { a.center, temp.x,temp.y } );
+
+	return flag_a && flag_b;
 }
 
 
@@ -16,9 +35,9 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 //						  PX_Box_Shape									//
 //																		//
 //======================================================================//
-PX_Box_Shape::PX_Box_Shape( const IVec2& pos, int side )
+PX_Box_Shape::PX_Box_Shape( const IVec2& pos, int width, int height )
 	:
-	OBB { pos, side }
+	OBB { pos, width, height }
 {}
 
 bool PX_Box_Shape::Collision_Test( const PX_Box_Shape& box ) const
@@ -39,10 +58,10 @@ void PX_Box_Shape::Transform( const PX_Pose_Data& pose )
 
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 {
-	IVec2 A {  OBB.half_lenght[0],   OBB.half_lenght [0] };
-	IVec2 B { -OBB.half_lenght [0],  OBB.half_lenght [0] };
-	IVec2 C {  OBB.half_lenght [0], -OBB.half_lenght [0] };
-	IVec2 D { -OBB.half_lenght [0], -OBB.half_lenght [0] };
+	IVec2 A =  OBB.half_lengths;
+	IVec2 B { -OBB.half_lengths.x,  OBB.half_lengths.y };
+	IVec2 C {  OBB.half_lengths.x, -OBB.half_lengths.y };
+	IVec2 D = -OBB.half_lengths;
 
 	//Rotate
 	OBB.orientation *= A;
@@ -66,5 +85,6 @@ void PX_Box_Shape::Translate( const IVec2& displacement )
 
 void PX_Box_Shape::Rotate( const Radians& theta )
 {
-	OBB.orientation = RotMtrx2( theta.rads );
+	OBB.orientation = RotMtrx2( theta.rads );//
+	// *= for nice effect;
 }

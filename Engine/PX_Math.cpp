@@ -1,6 +1,8 @@
 #include "PX_Math.h"
 
-constexpr float TWO_PI = 2 * M_PI;
+constexpr float TWO_PI = 2.0f * M_PI;
+constexpr float PI_OVER_2 = M_PI / 2.0f;
+constexpr float PI_OVER_4 = M_PI / 4.0f;
 constexpr float DGS_360 = 360.0f;
 
 Degrees::Degrees( float dgs )
@@ -54,4 +56,11 @@ void Radians::Normalize()
 	{
 		rads -= std::copysign( TWO_PI, rads );
 	}
+}
+
+IVec2 Sgn_Alternator( int i )
+{
+	return
+	{ int( cos( i * PI_OVER_2 ) ),
+	  int( sin( PI_OVER_2 + i * PI_OVER_2 ) ) };
 }

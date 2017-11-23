@@ -114,8 +114,8 @@ using FVec2 = Vec2_<float>;
 using IVec2 = Vec2_<int>;
 
 
-template<class Vec>
-float Dot_Prod( const Vec& vec1, const Vec& vec2 )
+template<class Vec1, class Vec2>
+float Dot_Prod( const Vec1& vec1, const Vec2& vec2 )
 {
 	return vec1.x * vec2.x + vec1.y * vec2.y;
 }
@@ -125,8 +125,8 @@ FVec2 Cross_Prod( const IVec& vec1, const FVec& vec2 )
 {
 }
 
-template<class IVec, class FVec>
-float Perp_Dot_Prod( const IVec& vec1, const FVec& vec2 )
+template<class Vec1, class Vec2>
+float Perp_Dot_Prod( const Vec1& vec1, const Vec2& vec2 )
 {
 	auto perp_v1 = vec1.GetPerp();
 

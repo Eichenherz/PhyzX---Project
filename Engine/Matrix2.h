@@ -32,7 +32,7 @@ public:
 	template<typename S>
 	Vec2_<S>&	operator*=( Vec2_<S>& rhs ) const;
 
-private:
+protected:
 	T	a11, a12,
 		a21, a22;
 };
@@ -43,16 +43,33 @@ using IMtrx2 = Matrix2<int>;
 class RotMtrx2 : public FMtrx2
 {
 public:
-	RotMtrx2()
+				RotMtrx2()
 		:
 		FMtrx2	{ 1.0f, 0.0f, 
 				  0.0f, 1.0f }
 	{}
-	RotMtrx2( float theta )
+				RotMtrx2( float theta )
 		:
 		FMtrx2 { std::cos( theta ), -( std::sin( theta ) ),
 				 std::sin( theta ), std::cos( theta ) }
 	{}
+				RotMtrx2( const FMtrx2& m )
+					:
+					FMtrx2 { m }
+				{}
+
+	FVec2		Basis_X() const
+	{
+		return { a11, a12 };
+	}
+	FVec2		Basis_Y() const
+	{
+		return { a21, a22 };
+	}
+	RotMtrx2	inverted() const
+	{
+		return this->transpozed();
+	}
 };
 
 

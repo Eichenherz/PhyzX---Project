@@ -25,8 +25,8 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd		( wnd ),
 	gfx		( wnd ),
-	pose { {100,100}, angle },
-	box		{ pose.pos, box_side },
+	pose	{ {100,100}, angle },
+	box		{ pose.pos, box_side, box_side },
 	phyzx	{ mass, box_side, box.Center() }
 {
 }

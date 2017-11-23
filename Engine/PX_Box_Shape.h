@@ -3,43 +3,47 @@
 #include "Vec2.h"
 #include "Matrix2.h"
 #include "PX_Math.h"
-#include <array>
 
-struct PX_AABB
+struct PX_AABB 
 {
 	IVec2	center;
-	int		radius; // half the widh of the square box
+	IVec2	half_lengths;
 
-	PX_AABB( IVec2 pos, int side )
+	PX_AABB( const IVec2& pos, int width, int height )
 		:
-		radius { side / 2 },
-		center { pos.x + radius, pos.y + radius }
+		half_lengths	{ width / 2, height / 2 },
+		center			{ pos + half_lengths }
 	{}
 };
 
 struct PX_OBB
 {
-	IVec2				center;
-	RotMtrx2			orientation;
-	std::array<int, 2>	half_lenght;
+	IVec2		center;
+	IVec2		half_lengths;
+	RotMtrx2	orientation;
 
-	PX_OBB( const IVec2& center, int width,
-			int height = 0, const Radians& theta = Radians { 0.0f } )
+
+	PX_OBB( const IVec2& pos, int width, int height, 
+			const Radians& theta = Radians { 0.0f } )
 		:
-		center { center },
-		orientation { theta.rads }
+		half_lengths	{ width / 2, height / 2 },
+		center			{ pos + half_lengths },
+		orientation		{ theta.rads }
+	{}
+
+	PX_AABB  Make_AABB() const
 	{
-		half_lenght [0] = width / 2;
-		half_lenght [1] = height / 2;
+		return PX_AABB { center - half_lengths, half_lengths.x, half_lengths.y };
 	}
 };
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
+bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b );
 
 class PX_Box_Shape 
 {
 public:
-					PX_Box_Shape( const IVec2& pos, int side );
+					PX_Box_Shape( const IVec2& pos, int width, int height );
 
 	bool			Collision_Test( const PX_Box_Shape& box ) const;
 	const IVec2&	Center() const;

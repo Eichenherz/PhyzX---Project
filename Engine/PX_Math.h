@@ -31,3 +31,5 @@ struct Radians
 	//To be added as needed
 	void		Normalize();
 };
+
+IVec2 Sgn_Alternator( int i );
