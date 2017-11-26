@@ -88,7 +88,7 @@ void Game::UpdateModel( float dt )
 	phyzx.Update_Kinetic_State( dt );
 	//
 	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
-	pose.orientation = phyzx.Kinetic_Status().angular_vel * dt;
+	pose.orientation += omega_vel * dt;  //phyzx.Kinetic_Status().angular_vel * dt;
 
 	box.Transform( pose );
 

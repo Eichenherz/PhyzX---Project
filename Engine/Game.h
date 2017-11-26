@@ -65,6 +65,8 @@ private:
 	//PX_Box_Shape			boxB;
 	PX_Rigid_Body_Physics	phyzx;
 
+	float					omega_vel = 1.0f;
+
 	Sound					hit = L"Sounds\\hit.wav";
 	/********************************/
 };
