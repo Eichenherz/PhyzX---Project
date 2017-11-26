@@ -53,6 +53,6 @@ public:
 
 	PX_OBB OBB;
 private:
-	void			Rotate( const Radians& theta );
+	void			Rotate( float theta );
 	void			Translate( const IVec2& displacement );
 };

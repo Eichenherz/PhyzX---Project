@@ -25,7 +25,7 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd		( wnd ),
 	gfx		( wnd ),
-	pose	{ { 100,100 }, angleA },
+	pose	{ { 100,100 }, 0.0f },
 	box		{ pose.pos, box_side, box_side },
 	//poseB	{ { 110 + box_side/2, 100 }, angleB },
 	//boxB	{ poseB.pos, box_side, box_side },
@@ -52,7 +52,7 @@ void Game::Go()
 void Game::UpdateModel( float dt )
 {
 	
-	FVec2 f { 200.0f, 200.0f }; // Undesired vibration.
+	FVec2 f { 300.0f, 300.0f }; // Undesired vibration.
 	//FVec2 f { 3000.0f, 4000.0f };
 	//FVec2 f { 4000.0f, 5000.0f };
 	//FVec2 f { 20000.0f, 30000.0f };
@@ -90,8 +90,7 @@ void Game::UpdateModel( float dt )
 	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
 	pose.orientation = phyzx.Kinetic_Status().angular_vel * dt;
 
-	box.Transform( { IVec2( phyzx.Kinetic_Status().linear_vel * dt ),
-				     phyzx.Kinetic_Status().angular_vel * dt } );
+	box.Transform( pose );
 
 	/*
 	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )  angleA += Radians { 0.15f };

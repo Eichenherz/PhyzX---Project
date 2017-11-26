@@ -110,8 +110,8 @@ void PX_Box_Shape::Translate( const IVec2& displacement )
 	OBB.center += displacement;
 }
 
-void PX_Box_Shape::Rotate( const Radians& theta )
+void PX_Box_Shape::Rotate( float theta )
 {
-	OBB.orientation = RotMtrx2( theta.rads );//
+	OBB.orientation = RotMtrx2( theta );//
 	// *= for nice effect;
 }
