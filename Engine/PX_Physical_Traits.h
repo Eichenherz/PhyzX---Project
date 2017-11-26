@@ -8,7 +8,7 @@
 //						PHYSICS DATA STRUCTURES							//
 //																		//
 //======================================================================//
-struct PX_Mass_Data
+struct PX_Mass_Data // Mass_Properties
 {
 	IVec2	center; // of mass
 	float	mass;

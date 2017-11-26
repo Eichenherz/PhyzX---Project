@@ -6,8 +6,8 @@
 //					  CONSTANTS						 //
 //												     //
 //===================================================//
-static constexpr float	kinetic_friction = 0.20f;
-static constexpr float	static_friction = 0.35f;
+static constexpr float	kinetic_friction = 0.10f;
+static constexpr float	static_friction = 0.25f;
 static constexpr float	gravitational_const = 10.0f;
 static constexpr float	LINEAR_MOV_THRESHOLD = 0.1f;
 static constexpr float	ANGULAR_MOV_THRESHOLD = 0.01f;
@@ -70,9 +70,9 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 		kinetic_state.linear_vel += Linear_Accelereation() * dt;
 		kinetic_state.linear_vel *= 1.0f - kinetic_friction / 2.0f;
 	}
-	else if ( kinetic_state.linear_vel.GetLength() > LINEAR_MOV_THRESHOLD )
+	else if ( kinetic_state.linear_vel.GetLength() < LINEAR_MOV_THRESHOLD )
 	{
-		kinetic_state.linear_vel *= 1.0f - kinetic_friction / 2.0f;
+		kinetic_state.linear_vel = FVec2 { 0.0f,0.0f };
 	}
 
 	if ( kinetic_state.angular_vel != 0.0f ||
@@ -81,9 +81,9 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 		kinetic_state.angular_vel += Angular_Accelereation() * dt;
 		kinetic_state.angular_vel *= 1.0f - kinetic_friction / 10.0f;
 	}
-	else if ( kinetic_state.angular_vel > ANGULAR_MOV_THRESHOLD )
+	else if ( kinetic_state.angular_vel < ANGULAR_MOV_THRESHOLD )
 	{
-		kinetic_state.angular_vel *= 1.0f - kinetic_friction / 10.0f;
+		kinetic_state.angular_vel = 0.0f;
 	}
 }
 
