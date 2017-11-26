@@ -2,7 +2,7 @@
 #include "PX_Physical_Traits.h"
 #include <math.h>
 #include "Graphics.h"
-#include "array"
+#include "Rect.h"
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 {
@@ -11,21 +11,48 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 		std::abs( b.center.y - a.center.y ) < ( b.half_lengths.y + a.half_lengths.y );
 }
 
-bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
+bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )//
 {
-	auto temp = b.half_lengths;
-	b.orientation.inverted() *= temp;
-	a.orientation *= temp;
-
-	auto flag_a = AABB_Intersection( a.Make_AABB(), PX_AABB { b.center, temp.x,temp.y } );
-
-	temp = a.half_lengths;
+	/*auto temp = a.half_lengths;
 	a.orientation.inverted() *= temp;
 	b.orientation *= temp;
 
-	auto flag_b = AABB_Intersection( b.Make_AABB(), PX_AABB { a.center, temp.x,temp.y } );
+	PX_AABB t1 { IVec2 { 0, 0 }, temp.x, temp.y };
+	PX_AABB t2 { IVec2 { 0, 0 }, b.half_lengths.x, b.half_lengths.y };
+	bool flag_b = AABB_Intersection( t2, t1 );
 
-	return flag_a && flag_b;
+	 temp = b.half_lengths;
+	b.orientation.inverted() *= temp;
+	a.orientation *= temp;
+
+	PX_AABB p1 { IVec2 { 0, 0 }, temp.x, temp.y };
+	PX_AABB p2 { IVec2 { 0, 0 }, a.half_lengths.x, a.half_lengths.y };
+	bool flag_a = AABB_Intersection( p2, p1 );
+
+	return flag_a && flag_b;*/
+
+	IVec2 t = a.orientation.inverted() * ( b.center - a.center );
+	RotMtrx2 C = a.orientation.inverted() * b.orientation;
+
+	auto sep_x = Dot_Prod( t, a.orientation.Basis_X() ) -
+		( a.half_lengths.x + Dot_Prod( C * b.half_lengths, a.orientation.Basis_X() ) );
+	auto sep_y = Dot_Prod( t, a.orientation.Basis_Y() ) -
+		( a.half_lengths.y + Dot_Prod( C * b.half_lengths, a.orientation.Basis_Y() ) );
+
+	if ( sep_x > 0.0f ) return false;
+	else if ( sep_y > 0.0f ) return false;
+
+	IVec2 t1 = a.orientation.inverted() * ( b.center - a.center );
+	RotMtrx2 C1 = a.orientation.inverted() * b.orientation;
+
+	auto sep_x1 = Dot_Prod( t1, b.orientation.Basis_X() ) -
+		( b.half_lengths.x + Dot_Prod( C1 * a.half_lengths, b.orientation.Basis_X() ) );
+	auto sep_y1 = Dot_Prod( t1, b.orientation.Basis_Y() ) -
+		( b.half_lengths.y + Dot_Prod( C1 * b.half_lengths, b.orientation.Basis_Y() ) );
+
+	if ( sep_x1 > 0.0f ) return false;
+	else if ( sep_y1 > 0.0f ) return false;
+	else return true;
 }
 
 

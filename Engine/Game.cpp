@@ -25,8 +25,10 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd		( wnd ),
 	gfx		( wnd ),
-	pose	{ {100,100}, angle },
+	pose	{ { 100,100 }, angleA },
 	box		{ pose.pos, box_side, box_side },
+	//poseB	{ { 110 + box_side/2, 100 }, angleB },
+	//boxB	{ poseB.pos, box_side, box_side },
 	phyzx	{ mass, box_side, box.Center() }
 {
 }
@@ -34,7 +36,6 @@ Game::Game( MainWindow& wnd )
 void Game::Go()
 {
 	gfx.BeginFrame();
-
 	float elapsed_time = ft.Mark();
 	while ( elapsed_time > 0.0f )
 	{
@@ -43,13 +44,15 @@ void Game::Go()
 
 		elapsed_time -= dt;
 	}
+	
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
 void Game::UpdateModel( float dt )
 {
-	FVec2 f { 100.0f, 100.0f }; // Undesired vibration.
+	
+	FVec2 f { 200.0f, 200.0f }; // Undesired vibration.
 	//FVec2 f { 3000.0f, 4000.0f };
 	//FVec2 f { 4000.0f, 5000.0f };
 	//FVec2 f { 20000.0f, 30000.0f };
@@ -87,12 +90,25 @@ void Game::UpdateModel( float dt )
 	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
 	pose.orientation = phyzx.Kinetic_Status().angular_vel * dt;
 
-	box.Transform( {IVec2( phyzx.Kinetic_Status().linear_vel * dt ),
-				   phyzx.Kinetic_Status().angular_vel * dt
-} );
+	box.Transform( { IVec2( phyzx.Kinetic_Status().linear_vel * dt ),
+				     phyzx.Kinetic_Status().angular_vel * dt } );
+
+	/*
+	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )  angleA += Radians { 0.15f };
+	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) ) angleB += Radians { -0.15f };
+
+	boxA.Transform( PX_Pose_Data { posA, angleA } );
+	boxB.Transform( PX_Pose_Data { posB, angleB } );
+
+	if ( OBB_Intersection( boxA.OBB, boxB.OBB ) )
+	{
+		hit.Play();
+	}
+	boxA.Draw( gfx, Colors::Red );
+	boxB.Draw( gfx, Colors::Blue );*/
 }
 
 void Game::ComposeFrame()
 {
-	box.Draw( gfx, Colors::Red );
+	box.Draw( gfx, Colors::Blue );
 }

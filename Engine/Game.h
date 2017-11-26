@@ -53,11 +53,16 @@ private:
 
 	static constexpr int	box_side = 30;
 	static constexpr float	mass = 5.0f;
-	Radians					angle = 0.0f;
+	Radians					angleA = 0.0f;
+	//Radians					angleB = 0.785398163f;
+	IVec2					posA;
+	//IVec2					posB;
 	//FVec2 f { 300.0f, 300.0f };
 
 	PX_Pose_Data			pose;
+	//PX_Pose_Data			poseB;
 	PX_Box_Shape			box;
+	//PX_Box_Shape			boxB;
 	PX_Rigid_Body_Physics	phyzx;
 
 	Sound					hit = L"Sounds\\hit.wav";

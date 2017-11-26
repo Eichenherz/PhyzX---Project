@@ -50,9 +50,9 @@ public:
 	void			Transform( const struct PX_Pose_Data& pose );
 	void			Draw( class Graphics& gfx, class Color c ) const;
 
-private:
-	PX_OBB OBB;
 
+	PX_OBB OBB;
+private:
 	void			Rotate( const Radians& theta );
 	void			Translate( const IVec2& displacement );
 };

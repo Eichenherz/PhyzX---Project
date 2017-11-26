@@ -22,10 +22,6 @@ public:
 	Matrix2&	operator*= ( T scalar );
 	Matrix2		operator/ ( T scalar ) const;
 	Matrix2&	operator/= ( T scalar );
-	T			det() const;
-	T			tr() const;
-	Matrix2&	transpoze();
-	Matrix2		transpozed() const;
 
 	template<typename S>
 	Vec2_<S>	operator*( const Vec2_<S>& rhs ) const;
@@ -43,20 +39,18 @@ using IMtrx2 = Matrix2<int>;
 class RotMtrx2 : public FMtrx2
 {
 public:
-				RotMtrx2()
-		:
-		FMtrx2	{ 1.0f, 0.0f, 
-				  0.0f, 1.0f }
-	{}
-				RotMtrx2( float theta )
-		:
-		FMtrx2 { std::cos( theta ), -( std::sin( theta ) ),
-				 std::sin( theta ), std::cos( theta ) }
-	{}
-				RotMtrx2( const FMtrx2& m )
-					:
-					FMtrx2 { m }
+				RotMtrx2() : FMtrx2 { 1.0f, 0.0f, 0.0f, 1.0f }
 				{}
+				RotMtrx2( float theta ) : FMtrx2 { std::cos( theta ), -( std::sin( theta ) ),
+												   std::sin( theta ), std::cos( theta ) }
+				{}
+				RotMtrx2( const RotMtrx2& r ) : FMtrx2 { r.a11, r.a12, r.a21, r.a22 }
+				{}
+				RotMtrx2( const FMtrx2& f )
+					:
+					FMtrx2 { f }
+				{}
+
 
 	FVec2		Basis_X() const
 	{
@@ -66,9 +60,14 @@ public:
 	{
 		return { a21, a22 };
 	}
+	RotMtrx2&	invert()
+	{
+		std::swap( a12, a21 );
+		return *this;
+	}
 	RotMtrx2	inverted() const
 	{
-		return this->transpozed();
+		return RotMtrx2 { *this }.invert();
 	}
 };
 
@@ -174,32 +173,6 @@ Matrix2<T>& Matrix2<T>::operator/=( T scalar )
 }
 
 template<typename T>
-T Matrix2<T>::det() const
-{
-	return a11 * a22 - a12 * a21;
-}
-
-template<typename T>
-T Matrix2<T>::tr() const
-{
-	return a11 + a22;
-}
-
-template<typename T>
-Matrix2<T>& Matrix2<T>::transpoze()
-{
-	std::swap( a12, a21 );
-
-	return *this;
-}
-
-template<typename T>
-Matrix2<T> Matrix2<T>::transpozed() const
-{
-	return Matrix2( *this ).transpoze();
-}
-
-template<typename T>
 template<typename S>
 Vec2_<S> Matrix2<T>::operator*( const Vec2_<S>& rhs ) const
 {
@@ -225,3 +198,5 @@ Vec2_<S>& Matrix2<T>::operator*=( Vec2_<S>& rhs ) const
 	rhs.y = S( a21 * rhs_x + a22 * rhs_y );
 	return rhs;
 }
+
+	
