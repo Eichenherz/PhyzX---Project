@@ -52,7 +52,7 @@ void Game::Go()
 void Game::UpdateModel( float dt )
 {
 	
-	FVec2 f { 300.0f, 300.0f }; // Undesired vibration.
+	FVec2 f { 50.0f, 50.0f }; // Undesired vibration.
 	//FVec2 f { 3000.0f, 4000.0f };
 	//FVec2 f { 4000.0f, 5000.0f };
 	//FVec2 f { 20000.0f, 30000.0f };
@@ -88,7 +88,7 @@ void Game::UpdateModel( float dt )
 	phyzx.Update_Kinetic_State( dt );
 	//
 	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
-	pose.orientation += omega_vel * dt;  //phyzx.Kinetic_Status().angular_vel * dt;
+	pose.orientation += phyzx.Kinetic_Status().angular_vel * dt;
 
 	box.Transform( pose );
 
