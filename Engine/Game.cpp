@@ -49,11 +49,9 @@ void Game::Go()
 
 void Game::UpdateModel( float dt )
 {
-	FVec2 f { 100.0f, 100.0f }; // Undesired vibration.
-	//FVec2 f { 3000.0f, 4000.0f };
-	//FVec2 f { 4000.0f, 5000.0f };
-	//FVec2 f { 20000.0f, 30000.0f };
+	FVec2 f { 100.0f, 100.0f };
 	FVec2 g = -f;
+
 	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )
 	{		
 		f += FVec2 { -100.0f, 0.0f };
@@ -83,13 +81,11 @@ void Game::UpdateModel( float dt )
 		phyzx.Halt_Force();
 	}
 	phyzx.Update_Kinetic_State( dt );
-	//
-	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
-	pose.orientation = phyzx.Kinetic_Status().angular_vel * dt;
 
-	box.Transform( {IVec2( phyzx.Kinetic_Status().linear_vel * dt ),
-				   phyzx.Kinetic_Status().angular_vel * dt
-} );
+	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt ); // Must not be += . At least yet.
+	pose.orientation += phyzx.Kinetic_Status().angular_vel * dt; // Beware of Radians data type.
+
+	box.Transform( pose );
 }
 
 void Game::ComposeFrame()

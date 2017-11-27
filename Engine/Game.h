@@ -54,7 +54,6 @@ private:
 	static constexpr int	box_side = 30;
 	static constexpr float	mass = 5.0f;
 	Radians					angle = 0.0f;
-	//FVec2 f { 300.0f, 300.0f };
 
 	PX_Pose_Data			pose;
 	PX_Box_Shape			box;
