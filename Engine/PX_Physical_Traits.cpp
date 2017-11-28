@@ -6,7 +6,7 @@
 //					  CONSTANTS						 //
 //												     //
 //===================================================//
-static constexpr float	kinetic_friction = 0.80f;
+static constexpr float	kinetic_friction = 0.85f;
 static constexpr float	static_friction = 0.95f;
 static constexpr float	gravitational_const = 10.0f;
 
@@ -41,15 +41,12 @@ inline auto PX_Rigid_Body_Physics::Angular_Drag() const
 
 void PX_Rigid_Body_Physics::Apply_Force( const FVec2& force, const IVec2& app_pt )
 {
-	//Apply all forces as long as they are active.
 	resultant.force += force;
-	resultant.torque += ( mass_data.center - app_pt ).x * force.y - ( mass_data.center - app_pt ).y * force.x;
-	//Perp_Dot_Prod( mass_data.center - app_pt, force );
+	resultant.torque += Perp_Dot_Prod( mass_data.center - app_pt, force );
 }
 
 void PX_Rigid_Body_Physics::Halt_Force()
 {
-	// When all motor forces cease only friction remains.
 	resultant.force = FVec2 { 0.0f,0.0f };
 	resultant.torque = 0.0f;
 }
@@ -61,7 +58,7 @@ inline auto PX_Rigid_Body_Physics::Linear_Accelereation() const
 
 inline auto PX_Rigid_Body_Physics::Angular_Accelereation() const
 {
-	return ( resultant.torque + Angular_Drag() ) / mass_data.I;
+	return ( resultant.torque ) / mass_data.I;
 }
 
 void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
@@ -77,6 +74,7 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 		 std::fabs( resultant.torque ) > static_angular_drag )
 	{
 		kinetic_state.angular_vel += Angular_Accelereation() * dt;
+		kinetic_state.angular_vel *= kinetic_friction;
 	}
 }
 

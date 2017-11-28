@@ -49,7 +49,7 @@ void Game::Go()
 
 void Game::UpdateModel( float dt )
 {
-	FVec2 f { 100.0f, 100.0f };
+	FVec2 f { 400.0f, 300.0f };
 	FVec2 g = -f;
 
 	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )
