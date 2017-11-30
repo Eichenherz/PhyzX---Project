@@ -25,11 +25,12 @@ Game::Game( MainWindow& wnd )
 	:
 	wnd		( wnd ),
 	gfx		( wnd ),
-	pose	{ { 100,100 }, 0.0f },
+	pose	{ gfx.GetScreenRect().GetCenter(), 0.0f },
 	box		{ pose.pos, box_side, box_side },
 	//poseB	{ { 110 + box_side/2, 100 }, angleB },
 	//boxB	{ poseB.pos, box_side, box_side },
-	phyzx	{ mass, box_side, box.Center() }
+	phyzx	{ mass, box_side, box.Center(), pose },
+	debug_text { "Images\\Fixedsys16x28.bmp" }
 {
 }
 
@@ -44,41 +45,24 @@ void Game::Go()
 
 		elapsed_time -= dt;
 	}
-	
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
 void Game::UpdateModel( float dt )
 {
-	
-	FVec2 f { 50.0f, 50.0f }; // Undesired vibration.
-	//FVec2 f { 3000.0f, 4000.0f };
-	//FVec2 f { 4000.0f, 5000.0f };
-	//FVec2 f { 20000.0f, 30000.0f };
+	FVec2 f { 50.0f, 50.0f }; 
 	FVec2 g = -f;
-	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )
-	{		
-		f += FVec2 { -100.0f, 0.0f };
-	}
-	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) )
-	{
-		f += FVec2 { 100.0f, 0.0f };
-	}
-	if ( wnd.kbd.KeyIsPressed( VK_UP ) )
-	{
-		f += FVec2 { 0.0f, -100.0f };
-	}
-	if ( wnd.kbd.KeyIsPressed( VK_DOWN ) )
-	{
-		f += FVec2 { 0.0f,  100.0f };
-	}
 
-	auto l = f.GetLength();
-	if ( wnd.mouse.LeftIsPressed() )
+	if ( wnd.mouse.LeftIsPressed() && flag == false )
 	{
-		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } );
-		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } );
+		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } , gfx);
+		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } , gfx);
+		flag = true;
+	}
+	if ( !wnd.mouse.LeftIsPressed() )
+	{
+		flag = false;
 	}
 
 	if ( wnd.mouse.RightIsPressed() )
@@ -86,12 +70,10 @@ void Game::UpdateModel( float dt )
 		phyzx.Halt_Force();
 	}
 	phyzx.Update_Kinetic_State( dt );
-	//
 	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
 	pose.orientation += phyzx.Kinetic_Status().angular_vel * dt;
-
+	
 	box.Transform( pose );
-
 	/*
 	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )  angleA += Radians { 0.15f };
 	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) ) angleB += Radians { -0.15f };
@@ -110,4 +92,7 @@ void Game::UpdateModel( float dt )
 void Game::ComposeFrame()
 {
 	box.Draw( gfx, Colors::Blue );
+	debug_text.DrawText( "Angular Vel " + std::to_string( phyzx.Kinetic_Status().angular_vel ), { 10,10 }, Colors::Blue, gfx );
+	debug_text.DrawText( "Angular Friction " + std::to_string( phyzx.Angular_Friction() ), { 10,40 }, Colors::Blue, gfx );
+	debug_text.DrawText( "Angular Accl " + std::to_string( phyzx.Angular_Acceleration() ), { 10,70 }, Colors::Blue, gfx );
 }

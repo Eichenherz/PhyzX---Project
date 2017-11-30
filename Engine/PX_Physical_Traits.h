@@ -33,6 +33,11 @@ struct PX_Pose_Data
 		pos				{ pos },
 		orientation		{ dgs }
 	{}
+	PX_Pose_Data( const PX_Pose_Data& p )
+		: 
+		pos { p.pos },
+		orientation { p.orientation }
+	{}
 };
 
 struct PX_Kinetic_Data
@@ -61,27 +66,29 @@ struct PX_Dynamic_Data
 class PX_Rigid_Body_Physics
 {
 public:
-							PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct );
+							PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct, PX_Pose_Data&  pose );
 
-	void					Apply_Force( const FVec2& force, const IVec2& app_pt );
+	void					Apply_Force( const FVec2& force, const IVec2& app_pt, class Graphics& gfx );
 	void					Halt_Force();
 	void					Update_Kinetic_State( float dt );
 	const PX_Kinetic_Data&	Kinetic_Status() const;
 	PX_Kinetic_Data&		Kinetic_Status();
+	//void					Debug_Draw(  ) const;
 
-private:
+public://private:
 	PX_Mass_Data			mass_data;
-	PX_Kinetic_Data			kinetic_state;
 	PX_Dynamic_Data			resultant;
+	PX_Kinetic_Data			kinetic_state;
+	PX_Pose_Data&			pose_data;
 
 	const float				static_linear_friction;
 	const float				kinetic_linear_friction;
 	const float				static_angular_friction;
 	const float				kinetic_angular_friction;
 
-	auto					Linear_Drag() const;
-	auto					Angular_Drag() const;
+	auto					Linear_Friction() const;
+	float					Angular_Friction() const;
 
 	auto					Linear_Accelereation() const;
-	auto					Angular_Accelereation() const;
+	float					Angular_Acceleration() const;
 };

@@ -27,6 +27,7 @@
 #include "Sound.h"
 #include "PX_Box_Shape.h"
 #include "PX_Physical_Traits.h"
+#include "Font.h"
 
 class Game
 {
@@ -65,8 +66,8 @@ private:
 	//PX_Box_Shape			boxB;
 	PX_Rigid_Body_Physics	phyzx;
 
-	float					omega_vel = 1.0f;
-
+	bool					flag = false;
+	Font					debug_text;
 	Sound					hit = L"Sounds\\hit.wav";
 	/********************************/
 };
