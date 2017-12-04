@@ -66,14 +66,14 @@ struct PX_Dynamic_Data
 class PX_Rigid_Body_Physics
 {
 public:
-							PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct, PX_Pose_Data&  pose );
+							PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct, 
+												   PX_Pose_Data&  pose );
 
-	void					Apply_Force( const FVec2& force, const IVec2& app_pt, class Graphics& gfx );
+	void					Apply_Force( const FVec2& force, const IVec2& app_pt );
 	void					Halt_Force();
 	void					Update_Kinetic_State( float dt );
 	const PX_Kinetic_Data&	Kinetic_Status() const;
 	PX_Kinetic_Data&		Kinetic_Status();
-	//void					Debug_Draw(  ) const;
 
 public://private:
 	PX_Mass_Data			mass_data;

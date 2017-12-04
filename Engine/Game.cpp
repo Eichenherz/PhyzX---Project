@@ -56,8 +56,8 @@ void Game::UpdateModel( float dt )
 
 	if ( wnd.mouse.LeftIsPressed() && flag == false )
 	{
-		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } , gfx);
-		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } , gfx);
+		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } );
+		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } );
 		flag = true;
 	}
 	if ( !wnd.mouse.LeftIsPressed() )
