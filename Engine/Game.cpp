@@ -49,7 +49,7 @@ void Game::Go()
 
 void Game::UpdateModel( float dt )
 {
-	FVec2 f { 400.0f, 300.0f };
+	FVec2 f { 50.0f, 50.0f };
 	FVec2 g = -f;
 
 	if ( wnd.mouse.LeftIsPressed() && flag == false )

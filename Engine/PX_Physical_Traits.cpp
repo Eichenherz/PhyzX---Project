@@ -6,8 +6,8 @@
 //					  CONSTANTS						 //
 //												     //
 //===================================================//
-static constexpr float	kinetic_friction = 0.75f;
-static constexpr float	static_friction = 0.85f;
+static constexpr float	kinetic_friction = 0.15f;
+static constexpr float	static_friction = 0.35f;
 static constexpr float	gravitational_const = 10.0f;
 static constexpr float	LINEAR_THRESHOLD = 0.25f;
 static constexpr float	ANGULAR_THRESHOLD = 0.5f;
@@ -25,7 +25,10 @@ PX_Rigid_Body_Physics::PX_Rigid_Body_Physics( float mass, int side, const IVec2&
 	kinetic_linear_friction		{ kinetic_friction * mass_data.mass * gravitational_const },
 	static_angular_friction		{ static_friction * mass_data.I * gravitational_const },
 	kinetic_angular_friction	{ kinetic_friction * mass_data.I * gravitational_const }
-{}
+{
+	resultant.force = FVec2 { 0.0f,0.0f };
+	resultant.torque = 0.0f;
+}
 
 inline auto PX_Rigid_Body_Physics::Linear_Friction() const
 {
