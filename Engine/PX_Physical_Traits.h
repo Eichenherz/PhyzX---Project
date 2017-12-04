@@ -73,13 +73,13 @@ private:
 	PX_Kinetic_Data			kinetic_state;
 	PX_Dynamic_Data			resultant;
 
-	const float				static_linear_drag;
-	const float				kinetic_linear_drag;
-	const float				static_angular_drag;
-	const float				kinetic_angular_drag;
+	const float				static_linear_friction;
+	const float				kinetic_linear_friction;
+	const float				static_angular_friction;
+	const float				kinetic_angular_friction;
 
-	auto					Linear_Drag() const;
-	auto					Angular_Drag() const;
+	auto					Linear_Friction() const;
+	auto					Angular_Friction() const;
 
 	auto					Linear_Accelereation() const;
 	auto					Angular_Accelereation() const;

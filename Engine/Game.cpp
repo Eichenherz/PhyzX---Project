@@ -52,29 +52,13 @@ void Game::UpdateModel( float dt )
 	FVec2 f { 400.0f, 300.0f };
 	FVec2 g = -f;
 
-	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )
-	{		
-		f += FVec2 { -100.0f, 0.0f };
-	}
-	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) )
-	{
-		f += FVec2 { 100.0f, 0.0f };
-	}
-	if ( wnd.kbd.KeyIsPressed( VK_UP ) )
-	{
-		f += FVec2 { 0.0f, -100.0f };
-	}
-	if ( wnd.kbd.KeyIsPressed( VK_DOWN ) )
-	{
-		f += FVec2 { 0.0f,  100.0f };
-	}
-
-	auto l = f.GetLength();
-	if ( wnd.mouse.LeftIsPressed() )
+	if ( wnd.mouse.LeftIsPressed() && flag == false )
 	{
 		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } );
 		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } );
+		flag = true;
 	}
+	if ( !wnd.mouse.LeftIsPressed() ) { flag = false; }
 
 	if ( wnd.mouse.RightIsPressed() )
 	{

@@ -9,6 +9,7 @@ struct PX_AABB
 	IVec2	center;
 	IVec2	half_lengths;
 
+
 	PX_AABB( const IVec2& pos, int width, int height )
 		:
 		half_lengths	{ width / 2, height / 2 },

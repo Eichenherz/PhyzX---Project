@@ -59,6 +59,8 @@ private:
 	PX_Box_Shape			box;
 	PX_Rigid_Body_Physics	phyzx;
 
+	bool					flag = false;
+
 	Sound					hit = L"Sounds\\hit.wav";
 	/********************************/
 };
