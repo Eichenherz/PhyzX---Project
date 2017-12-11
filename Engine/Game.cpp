@@ -27,7 +27,7 @@ Game::Game( MainWindow& wnd )
 	gfx		( wnd ),
 	pose	{ {100,100}, angle },
 	box		{ pose.pos, box_side, box_side },
-	phyzx	{ mass, box_side, box.Center() }
+	phyzx	{ mass, box_side, box.Center(), pose }
 {
 }
 
@@ -64,11 +64,10 @@ void Game::UpdateModel( float dt )
 	{
 		phyzx.Halt_Force();
 	}
+
 	phyzx.Update_Kinetic_State( dt );
-
-	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt ); // Must not be += . At least yet.
-	pose.orientation += phyzx.Kinetic_Status().angular_vel * dt; // Beware of Radians data type.
-
+	phyzx.Update_Pose( dt );
+	
 	box.Transform( pose );
 }
 

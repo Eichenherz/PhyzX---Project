@@ -1,6 +1,7 @@
 #include "PX_Physical_Traits.h"
 #include <assert.h>
 
+using namespace PX;
 //===================================================//
 //													 //
 //					  CONSTANTS						 //
@@ -17,60 +18,59 @@ static constexpr float	ANGULAR_THRESHOLD = 0.5f;
 //			METHODS of PX_Rigid_Body_Physics		 //
 //												     //
 //===================================================//
-PX_Rigid_Body_Physics::PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct )
+Rigid_Body_Physics::Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct, PX_Pose_Data& pose0 )
 	:
-	mass_data					{ mass, side, mass_ct },
-	kinetic_state				{ { 0.0f, 0.0f }, 0.0f },
-	static_linear_friction		{ static_friction * mass_data.mass * gravitational_const },
-	kinetic_linear_friction		{ kinetic_friction * mass_data.mass * gravitational_const },
-	static_angular_friction		{ static_friction * mass_data.I * gravitational_const },
-	kinetic_angular_friction	{ kinetic_friction * mass_data.I * gravitational_const }
+	pose			{ pose0 },
+	mass_data		{ mass, side, mass_ct },
+	kinetic_state	{ { 0.0f, 0.0f }, 0.0f }, 
+	static_Cof		{ static_friction },
+	kinetic_Cof		{ kinetic_friction }
 {
 	resultant.force = FVec2 { 0.0f,0.0f };
 	resultant.torque = 0.0f;
 }
 
-inline auto PX_Rigid_Body_Physics::Linear_Friction() const
+inline auto Rigid_Body_Physics::Linear_Friction() const
 {
-	return resultant.force.GetNormalized().Negate() * kinetic_linear_friction;
+	return resultant.force.GetNormalized().Negate() * kinetic_Cof * mass_data.mass * gravitational_const;
 }
 
-inline auto PX_Rigid_Body_Physics::Angular_Friction() const
+inline float Rigid_Body_Physics::Angular_Friction() const
 {
 	if ( kinetic_state.angular_vel != 0.0f )
 	{
-		return std::copysign( kinetic_angular_friction, -kinetic_state.angular_vel );
+		return std::copysign( kinetic_Cof * mass_data.I * gravitational_const, -kinetic_state.angular_vel );
 	}
 	return 0.0f;
 }
 
-void PX_Rigid_Body_Physics::Apply_Force( const FVec2& force, const IVec2& app_pt )
+void Rigid_Body_Physics::Apply_Force( const FVec2& force, const IVec2& app_pt )
 {
 	resultant.force += force;
 	resultant.torque += Perp_Dot_Prod( mass_data.center - app_pt, force );
 }
 
-void PX_Rigid_Body_Physics::Halt_Force()
+void Rigid_Body_Physics::Halt_Force()
 {
 	resultant.force = FVec2 { 0.0f,0.0f };
 	resultant.torque = 0.0f;
 }
 
-inline auto PX_Rigid_Body_Physics::Linear_Accelereation() const
+inline auto Rigid_Body_Physics::Linear_Accelereation() const
 {
 	return ( resultant.force  + Linear_Friction() ) / mass_data.mass;
 }
 
-inline auto PX_Rigid_Body_Physics::Angular_Accelereation() const
+inline float Rigid_Body_Physics::Angular_Accelereation() const
 {
 	return ( resultant.torque + Angular_Friction() ) / mass_data.I;
 }
 
-void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
+void Rigid_Body_Physics::Update_Kinetic_State( float dt )// static_Cof must be static_friction
 {
 	//If moving or defeated static friction Euler integrate accl to get vel.
 	if ( kinetic_state.linear_vel.GetLength() > LINEAR_THRESHOLD ||
-		 resultant.force.GetLength() > static_linear_friction * static_linear_friction )
+		 resultant.force.GetLength() > static_Cof * static_Cof * mass_data.mass * gravitational_const  * mass_data.mass * gravitational_const )//
 	{
 		kinetic_state.linear_vel += Linear_Accelereation() * dt;
 	}
@@ -79,8 +79,8 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 		kinetic_state.linear_vel = FVec2 { 0.0f,0.0f };
 	}
 
-	if ( std::fabs(kinetic_state.angular_vel) > ANGULAR_THRESHOLD ||
-		 std::fabs( resultant.torque ) > static_angular_friction )
+	if ( std::fabs( kinetic_state.angular_vel ) > ANGULAR_THRESHOLD ||
+		 std::fabs( resultant.torque ) > static_Cof * mass_data.mass * gravitational_const )//
 	{
 		kinetic_state.angular_vel += Angular_Accelereation() * dt;
 	}
@@ -90,12 +90,9 @@ void PX_Rigid_Body_Physics::Update_Kinetic_State( float dt )
 	}
 }
 
-const PX_Kinetic_Data& PX_Rigid_Body_Physics::Kinetic_Status() const
+void Rigid_Body_Physics::Update_Pose( float dt )
 {
-	return kinetic_state;
+	pose.pos = IVec2( kinetic_state.linear_vel * dt ); // Must not be += . At least yet.
+	pose.orientation += kinetic_state.angular_vel * dt;
 }
 
-PX_Kinetic_Data & PX_Rigid_Body_Physics::Kinetic_Status()
-{
-	return kinetic_state;
-}

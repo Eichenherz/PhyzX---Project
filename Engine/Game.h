@@ -57,7 +57,7 @@ private:
 
 	PX_Pose_Data			pose;
 	PX_Box_Shape			box;
-	PX_Rigid_Body_Physics	phyzx;
+	PX::Rigid_Body_Physics	phyzx;
 
 	bool					flag = false;
 
