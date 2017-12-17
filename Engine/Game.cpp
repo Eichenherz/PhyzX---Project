@@ -94,7 +94,7 @@ void Game::UpdateModel( float dt )
 	box.Transform( PX_Pose_Data { posA, angleA } );
 	boxB.Transform( PX_Pose_Data { posB, angleB } );
 
-	//boxB.OBB.center = pos; // Quickly put your cursor @ screen_center after running program
+	boxB.OBB.center = pos; // Quickly put your cursor @ screen_center after running program
 
 	if ( OBB_Intersection( box.OBB, boxB.OBB ) )
 	{

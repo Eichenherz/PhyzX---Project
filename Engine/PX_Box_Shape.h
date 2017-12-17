@@ -38,7 +38,7 @@ struct PX_OBB
 };
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
-bool OBB_Intersection( PX_OBB& a, PX_OBB& b );
+bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b );
 
 class PX_Box_Shape 
 {

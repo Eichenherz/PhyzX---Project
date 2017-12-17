@@ -11,24 +11,27 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 		std::abs( b.center.y - a.center.y ) < ( b.half_lengths.y + a.half_lengths.y );
 }
 
-bool OBB_Intersection( PX_OBB& a, PX_OBB& b )// const 
+bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 {
-	IVec2 t = b.center - a.center;
-	RotMtrx2 C = a.orientation * b.orientation.inverted();
+	IVec2		t = a.orientation.inverted() * ( b.center - a.center );
+	RotMtrx2	C = a.orientation * b.orientation.inverted();
+	IVec2		B = C * b.half_lengths;
 
-	float s_aX = Dot_Prod( t, a.orientation.Basis_X() ) - ( a.half_lengths.x + Dot_Prod( C * b.half_lengths, a.orientation.Basis_X() ) );
-	float s_aY = Dot_Prod( t, a.orientation.Basis_Y() ) - ( a.half_lengths.y + Dot_Prod( C * b.half_lengths, a.orientation.Basis_Y() ) );
-
-	RotMtrx2 C1 = b.orientation * a.orientation.inverted();
-
-	float s_bX = Dot_Prod( t, b.orientation.Basis_X() ) - ( b.half_lengths.x + Dot_Prod( C1 * a.half_lengths, b.orientation.Basis_X() ) );
-	float s_bY = Dot_Prod( t, b.orientation.Basis_Y() ) - ( b.half_lengths.y + Dot_Prod( C1 * a.half_lengths, b.orientation.Basis_Y() ) );
-	
-
+	float s_aX = Dot_Prod( t, a.orientation.Basis_X() ) - ( a.half_lengths.x + Dot_Prod( B, a.orientation.Basis_X() ) );
 	if ( s_aX > 0.0f ) return false;
+
+	float s_aY = Dot_Prod( t, a.orientation.Basis_Y() ) - ( a.half_lengths.y + Dot_Prod( B, a.orientation.Basis_Y() ) );
 	if ( s_aY > 0.0f ) return false;
+
+	RotMtrx2	C1 = b.orientation * a.orientation.inverted();
+	IVec2		A = C1 * a.half_lengths;
+
+	float s_bX = Dot_Prod( t, b.orientation.Basis_X() ) - ( b.half_lengths.x + Dot_Prod( A, b.orientation.Basis_X() ) );
 	if ( s_bX > 0.0f ) return false;
+
+	float s_bY = Dot_Prod( t, b.orientation.Basis_Y() ) - ( b.half_lengths.y + Dot_Prod( A, b.orientation.Basis_Y() ) );
 	if ( s_bY > 0.0f ) return false;
+	
 	return true;
 }
 
