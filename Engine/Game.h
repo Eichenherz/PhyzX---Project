@@ -50,24 +50,25 @@ private:
 	/********************************/
 	/*  User Variables              */
 	static constexpr float	euler_h = 0.015f;
+	const IVec2				screen_center;
 	Timer					ft;
 
-	static constexpr int	box_side = 30;
+	static constexpr int	box_side = 50;
 	static constexpr float	mass = 5.0f;
 	Radians					angleA = 0.0f;
-	//Radians					angleB = 0.785398163f;
+	Radians					angleB = 0.785398163f;
 	IVec2					posA;
-	//IVec2					posB;
-	//FVec2 f { 300.0f, 300.0f };
+	IVec2					posB;
 
 	PX_Pose_Data			pose;
-	//PX_Pose_Data			poseB;
+	PX_Pose_Data			poseB;
 	PX_Box_Shape			box;
-	//PX_Box_Shape			boxB;
-	PX_Rigid_Body_Physics	phyzx;
+	PX_Box_Shape			boxB;
+
+	IVec2					pos;
 
 	bool					flag = false;
+	bool					collision = false;
 	Font					debug_text;
-	Sound					hit = L"Sounds\\hit.wav";
 	/********************************/
 };

@@ -23,14 +23,14 @@
 
 Game::Game( MainWindow& wnd )
 	:
-	wnd		( wnd ),
-	gfx		( wnd ),
-	pose	{ gfx.GetScreenRect().GetCenter(), 0.0f },
-	box		{ pose.pos, box_side, box_side },
-	//poseB	{ { 110 + box_side/2, 100 }, angleB },
-	//boxB	{ poseB.pos, box_side, box_side },
-	phyzx	{ mass, box_side, box.Center(), pose },
-	debug_text { "Images\\Fixedsys16x28.bmp" }
+	wnd				( wnd ),
+	gfx				( wnd ),
+	screen_center	{ gfx.GetScreenRect().GetCenter() },
+	pose			{ screen_center, angleA },
+	poseB			{ screen_center + IVec2 { box_side, box_side / 4 }, angleB },
+	box				{ pose.pos, box_side, box_side },
+	boxB			{ poseB.pos, box_side, box_side },
+	debug_text		{ "Images\\Fixedsys16x28.bmp" }
 {
 }
 
@@ -51,48 +51,71 @@ void Game::Go()
 
 void Game::UpdateModel( float dt )
 {
-	FVec2 f { 50.0f, 50.0f }; 
+	/*
+	FVec2 f { 50.0f, 50.0f };
 	FVec2 g = -f;
 
 	if ( wnd.mouse.LeftIsPressed() && flag == false )
 	{
-		phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } );
-		phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } );
-		flag = true;
+	phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } );
+	phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } );
+	flag = true;
 	}
 	if ( !wnd.mouse.LeftIsPressed() )
 	{
-		flag = false;
+	flag = false;
 	}
 
 	if ( wnd.mouse.RightIsPressed() )
 	{
-		phyzx.Halt_Force();
+	phyzx.Halt_Force();
 	}
 	phyzx.Update_Kinetic_State( dt );
 	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
 	pose.orientation += phyzx.Kinetic_Status().angular_vel * dt;
-	
-	box.Transform( pose );
-	/*
-	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) )  angleA += Radians { 0.15f };
-	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) ) angleB += Radians { -0.15f };
 
-	boxA.Transform( PX_Pose_Data { posA, angleA } );
+	box.Transform( pose );
+	*/
+
+	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) && !flag )
+	{
+		angleA += Radians { 0.15f };
+		flag = true;
+	}
+	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) && !flag )
+	{
+		angleB += Radians { -0.15f };
+		flag = true;
+	}
+	else flag = false;
+
+	pos = wnd.mouse.GetPos();
+
+	box.Transform( PX_Pose_Data { posA, angleA } );
 	boxB.Transform( PX_Pose_Data { posB, angleB } );
 
-	if ( OBB_Intersection( boxA.OBB, boxB.OBB ) )
+	//boxB.OBB.center = pos; // Quickly put your cursor @ screen_center after running program
+
+	if ( OBB_Intersection( box.OBB, boxB.OBB ) )
 	{
-		hit.Play();
+		collision = true;
 	}
-	boxA.Draw( gfx, Colors::Red );
-	boxB.Draw( gfx, Colors::Blue );*/
+	else collision = false;
 }
 
 void Game::ComposeFrame()
 {
 	box.Draw( gfx, Colors::Blue );
-	debug_text.DrawText( "Angular Vel " + std::to_string( phyzx.Kinetic_Status().angular_vel ), { 10,10 }, Colors::Blue, gfx );
-	debug_text.DrawText( "Angular Friction " + std::to_string( phyzx.Angular_Friction() ), { 10,40 }, Colors::Blue, gfx );
-	debug_text.DrawText( "Angular Accl " + std::to_string( phyzx.Angular_Acceleration() ), { 10,70 }, Colors::Blue, gfx );
+	boxB.Draw( gfx, Colors::Red );
+
+	//Debug
+	gfx.Draw_Line( box.Center(), boxB.Center(), Colors::Green );
+	if ( collision )
+	{
+		debug_text.DrawText( "Colliding!", { 10,10 }, Colors::Blue, gfx );
+	}
+
+	//debug_text.DrawText( "Angular Vel " + std::to_string( phyzx.Kinetic_Status().angular_vel ), { 10,10 }, Colors::Blue, gfx );
+	//debug_text.DrawText( "Angular Friction " + std::to_string( phyzx.Angular_Friction() ), { 10,40 }, Colors::Blue, gfx );
+	//debug_text.DrawText( "Angular Accl " + std::to_string( phyzx.Angular_Acceleration() ), { 10,70 }, Colors::Blue, gfx );
 }

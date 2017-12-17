@@ -25,17 +25,16 @@ struct PX_Mass_Data // Mass_Properties
 struct PX_Pose_Data
 {
 	IVec2			pos;
-	//Radians			orientation;
-	float	orientation;
+	Radians			orientation;
 
-	PX_Pose_Data( const IVec2& pos, float dgs )
+	PX_Pose_Data( const IVec2& pos, Radians dgs )
 		:
 		pos				{ pos },
 		orientation		{ dgs }
 	{}
 	PX_Pose_Data( const PX_Pose_Data& p )
 		: 
-		pos { p.pos },
+		pos			{ p.pos },
 		orientation { p.orientation }
 	{}
 };

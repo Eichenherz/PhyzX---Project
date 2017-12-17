@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include "Vec2.h"
+#include <array>
 
 struct Degrees
 {
@@ -33,3 +34,5 @@ struct Radians
 };
 
 IVec2 Sgn_Alternator( int i );
+
+std::array<IVec2, 4> Klein_4( int x, int y );

@@ -23,7 +23,6 @@ struct PX_OBB
 	IVec2		half_lengths;
 	RotMtrx2	orientation;
 
-
 	PX_OBB( const IVec2& pos, int width, int height, 
 			const Radians& theta = Radians { 0.0f } )
 		:
@@ -39,7 +38,7 @@ struct PX_OBB
 };
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
-bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b );
+bool OBB_Intersection( PX_OBB& a, PX_OBB& b );
 
 class PX_Box_Shape 
 {
@@ -52,7 +51,7 @@ public:
 	void			Draw( class Graphics& gfx, class Color c ) const;
 
 
-	PX_OBB OBB;
+	PX_OBB		OBB;
 private:
 	void			Rotate( float theta );
 	void			Translate( const IVec2& displacement );

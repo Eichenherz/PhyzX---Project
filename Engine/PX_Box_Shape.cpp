@@ -11,48 +11,25 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 		std::abs( b.center.y - a.center.y ) < ( b.half_lengths.y + a.half_lengths.y );
 }
 
-bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )//
+bool OBB_Intersection( PX_OBB& a, PX_OBB& b )// const 
 {
-	/*auto temp = a.half_lengths;
-	a.orientation.inverted() *= temp;
-	b.orientation *= temp;
+	IVec2 t = b.center - a.center;
+	RotMtrx2 C = a.orientation * b.orientation.inverted();
 
-	PX_AABB t1 { IVec2 { 0, 0 }, temp.x, temp.y };
-	PX_AABB t2 { IVec2 { 0, 0 }, b.half_lengths.x, b.half_lengths.y };
-	bool flag_b = AABB_Intersection( t2, t1 );
+	float s_aX = Dot_Prod( t, a.orientation.Basis_X() ) - ( a.half_lengths.x + Dot_Prod( C * b.half_lengths, a.orientation.Basis_X() ) );
+	float s_aY = Dot_Prod( t, a.orientation.Basis_Y() ) - ( a.half_lengths.y + Dot_Prod( C * b.half_lengths, a.orientation.Basis_Y() ) );
 
-	 temp = b.half_lengths;
-	b.orientation.inverted() *= temp;
-	a.orientation *= temp;
+	RotMtrx2 C1 = b.orientation * a.orientation.inverted();
 
-	PX_AABB p1 { IVec2 { 0, 0 }, temp.x, temp.y };
-	PX_AABB p2 { IVec2 { 0, 0 }, a.half_lengths.x, a.half_lengths.y };
-	bool flag_a = AABB_Intersection( p2, p1 );
+	float s_bX = Dot_Prod( t, b.orientation.Basis_X() ) - ( b.half_lengths.x + Dot_Prod( C1 * a.half_lengths, b.orientation.Basis_X() ) );
+	float s_bY = Dot_Prod( t, b.orientation.Basis_Y() ) - ( b.half_lengths.y + Dot_Prod( C1 * a.half_lengths, b.orientation.Basis_Y() ) );
+	
 
-	return flag_a && flag_b;*/
-
-	IVec2 t = a.orientation.inverted() * ( b.center - a.center );
-	RotMtrx2 C = a.orientation.inverted() * b.orientation;
-
-	auto sep_x = Dot_Prod( t, a.orientation.Basis_X() ) -
-		( a.half_lengths.x + Dot_Prod( C * b.half_lengths, a.orientation.Basis_X() ) );
-	auto sep_y = Dot_Prod( t, a.orientation.Basis_Y() ) -
-		( a.half_lengths.y + Dot_Prod( C * b.half_lengths, a.orientation.Basis_Y() ) );
-
-	if ( sep_x > 0.0f ) return false;
-	else if ( sep_y > 0.0f ) return false;
-
-	IVec2 t1 = a.orientation.inverted() * ( b.center - a.center );
-	RotMtrx2 C1 = a.orientation.inverted() * b.orientation;
-
-	auto sep_x1 = Dot_Prod( t1, b.orientation.Basis_X() ) -
-		( b.half_lengths.x + Dot_Prod( C1 * a.half_lengths, b.orientation.Basis_X() ) );
-	auto sep_y1 = Dot_Prod( t1, b.orientation.Basis_Y() ) -
-		( b.half_lengths.y + Dot_Prod( C1 * b.half_lengths, b.orientation.Basis_Y() ) );
-
-	if ( sep_x1 > 0.0f ) return false;
-	else if ( sep_y1 > 0.0f ) return false;
-	else return true;
+	if ( s_aX > 0.0f ) return false;
+	if ( s_aY > 0.0f ) return false;
+	if ( s_bX > 0.0f ) return false;
+	if ( s_bY > 0.0f ) return false;
+	return true;
 }
 
 
@@ -80,29 +57,28 @@ const IVec2& PX_Box_Shape::Center() const
 void PX_Box_Shape::Transform( const PX_Pose_Data& pose )
 {
 	Translate( pose.pos );
-	Rotate( pose.orientation );
+	Rotate( pose.orientation.rads );
 }
 
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 {
-	IVec2 A =  OBB.half_lengths;
-	IVec2 B { -OBB.half_lengths.x,  OBB.half_lengths.y };
-	IVec2 C {  OBB.half_lengths.x, -OBB.half_lengths.y };
-	IVec2 D = -OBB.half_lengths;
+	// A, B, C, D
+	auto vertices = Klein_4( OBB.half_lengths.x, OBB.half_lengths.y );
+	std::for_each( vertices.begin(), vertices.end(), 
+				   [&] ( IVec2& vertex ) 
+				   {
+					   OBB.orientation *= vertex;
+					   vertex += OBB.center;
+				   } );
 
-	//Rotate
-	OBB.orientation *= A;
-	OBB.orientation *= B;
-	OBB.orientation *= C;
-	OBB.orientation *= D;
+	gfx.Draw_Quad( vertices [0], vertices [1], vertices [2], vertices [3], c );
 
-	// Back to world coord
-	A += OBB.center;
-	B += OBB.center;
-	C += OBB.center;
-	D += OBB.center;
+	//Debug
+	//IVec2 start_point = OBB.center - OBB.half_lengths * 4;
+	//gfx.Draw_Line( start_point, IVec2( OBB.orientation.Basis_X() * 200 ) + start_point, Colors::Yellow );
+	//gfx.Draw_Line( start_point, IVec2( OBB.orientation.Basis_Y() * 200 ) + start_point, Colors::Yellow );
 
-	gfx.Draw_Quad( A, B, C, D, c );
+	gfx.Draw_Line( OBB.center, vertices[0], Colors::Magenta );
 }
 
 void PX_Box_Shape::Translate( const IVec2& displacement )

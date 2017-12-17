@@ -39,18 +39,16 @@ using IMtrx2 = Matrix2<int>;
 class RotMtrx2 : public FMtrx2
 {
 public:
-				RotMtrx2() : FMtrx2 { 1.0f, 0.0f, 0.0f, 1.0f }
+				RotMtrx2() : FMtrx2 { 1.0f, 0.0f, 
+										0.0f, 1.0f }
 				{}
 				RotMtrx2( float theta ) : FMtrx2 { std::cos( theta ), -( std::sin( theta ) ),
-												   std::sin( theta ), std::cos( theta ) }
+													std::sin( theta ), std::cos( theta ) }
 				{}
 				RotMtrx2( const RotMtrx2& r ) : FMtrx2 { r.a11, r.a12, r.a21, r.a22 }
 				{}
-				RotMtrx2( const FMtrx2& f )
-					:
-					FMtrx2 { f }
+				RotMtrx2( const FMtrx2& f ) : FMtrx2 { f }
 				{}
-
 
 	FVec2		Basis_X() const
 	{
