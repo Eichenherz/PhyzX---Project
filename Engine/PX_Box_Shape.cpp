@@ -13,25 +13,38 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 
 bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 {
-	IVec2		t = a.orientation.inverse() * ( b.center - a.center );
-	RotMtrx2	C =  b.orientation * a.orientation.inverse();
-	IVec2		B = C.abs() * b.half_lengths;
+	float ra, rb;
+	FVec2		t = FVec2( b.center - a.center );
+	RotMtrx2	R;
 
-	float s_aX = std::fabs( Dot_Prod( t, a.orientation.Basis_X() ) ) - ( a.half_lengths.x + ( Dot_Prod( B, a.orientation.Basis_X() ) ) );
-	if ( s_aX > 0.05f ) return false;
+	R.a [0] [0] = Dot_Prod( a.orientation.Basis_X(), b.orientation.Basis_X() );
+	R.a [0] [1] = Dot_Prod( a.orientation.Basis_X(), b.orientation.Basis_Y() );
+	R.a [1] [0] = Dot_Prod( a.orientation.Basis_Y(), b.orientation.Basis_X() );
+	R.a [1] [1] = Dot_Prod( a.orientation.Basis_Y(), b.orientation.Basis_Y() );
 
-	float s_aY = std::fabs( Dot_Prod( t, a.orientation.Basis_Y() ) ) - ( a.half_lengths.y + ( Dot_Prod( B, a.orientation.Basis_Y() ) ) );
-	if ( s_aY > 0.05f ) return false;
+	R.make_abs();
 
-	RotMtrx2	C1 = a.orientation * b.orientation.inverse();
-	IVec2		A = C1.abs() * a.half_lengths;
+	t = FVec2 { Dot_Prod( t, a.orientation.Basis_X() ),
+				Dot_Prod( t, a.orientation.Basis_Y() ) };
 
-	float s_bX = std::fabs( Dot_Prod( t, b.orientation.Basis_X() ) ) - ( b.half_lengths.x + ( Dot_Prod( A, b.orientation.Basis_X() ) ) );
-	if ( s_bX > 0.05f ) return false;
+	ra = a.half_lengths.x;
+	rb = b.half_lengths.x * R.a [0] [0] + b.half_lengths.y * R.a [0] [1];
+	if ( std::abs( t.x ) > ra + rb ) return false;
 
-	float s_bY = std::fabs( Dot_Prod( t, b.orientation.Basis_Y() ) ) - ( b.half_lengths.y + ( Dot_Prod( A, b.orientation.Basis_Y() ) ) );
-	if ( s_bY > 0.05f ) return false;
+	ra = a.half_lengths.y;
+	rb = b.half_lengths.x * R.a [1] [0] + b.half_lengths.y * R.a [1] [1];
+	if ( std::abs( t.y ) > ra + rb ) return false;
 	
+
+
+	ra = a.half_lengths.x * R.a [0] [0] + a.half_lengths.y * R.a [1] [0];
+	rb = b.half_lengths.x;
+	if ( std::abs( t.x * R.a [0] [0] + t.y * R.a [1] [0] ) > ra + rb ) return false;
+
+	ra = a.half_lengths.x * R.a [0] [1] + a.half_lengths.y * R.a [1] [1];
+	rb = b.half_lengths.y;
+	if ( std::abs( t.x * R.a [0] [1] + t.y * R.a [1] [1] ) > ra + rb ) return false;
+
 	return true;
 }
 
