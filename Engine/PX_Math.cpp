@@ -7,6 +7,7 @@ constexpr float PI_OVER_2 = M_PI / 2.0f;
 constexpr float PI_OVER_4 = M_PI / 4.0f;
 constexpr float DGS_360 = 360.0f;
 
+
 Degrees::Degrees( float dgs )
 	:
 	degrees { dgs }

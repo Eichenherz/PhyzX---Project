@@ -6,6 +6,8 @@
 #include "Vec2.h"
 #include <array>
 
+constexpr float EPSILON = 0.0025f;
+
 struct Degrees
 {
 	float degrees;

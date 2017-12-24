@@ -28,7 +28,7 @@ struct PX_OBB
 		:
 		half_lengths	{ width / 2, height / 2 },
 		center			{ pos + half_lengths },
-		orientation		{ theta.rads }
+		orientation		{ theta }
 	{}
 
 	PX_AABB  Make_AABB() const
