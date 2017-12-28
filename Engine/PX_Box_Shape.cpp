@@ -13,37 +13,30 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
 
 bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 {
-	float ra, rb;
 	FVec2		t = FVec2( b.center - a.center );
-	RotMtrx2	R;
-
-	R.a [0] [0] = Dot_Prod( a.orientation.Basis_X(), b.orientation.Basis_X() );
-	R.a [0] [1] = Dot_Prod( a.orientation.Basis_X(), b.orientation.Basis_Y() );
-	R.a [1] [0] = Dot_Prod( a.orientation.Basis_Y(), b.orientation.Basis_X() );
-	R.a [1] [1] = Dot_Prod( a.orientation.Basis_Y(), b.orientation.Basis_Y() );
+	RotMtrx2	R = a.orientation.inverse() * b.orientation;
 
 	R.make_abs();
 
-	t = FVec2 { Dot_Prod( t, a.orientation.Basis_X() ),
-				Dot_Prod( t, a.orientation.Basis_Y() ) };
+	// A space
+	const auto At = a.orientation.inverse() * t;
+	const auto Rb = R * b.half_lengths;
 
-	ra = a.half_lengths.x;
-	rb = b.half_lengths.x * R.a [0] [0] + b.half_lengths.y * R.a [0] [1];
-	if ( std::abs( t.x ) > ra + rb ) return false;
+	float sep_xa = std::fabs( At.x ) - ( a.half_lengths.x + Rb.x );
+	if ( sep_xa > 0.0f ) return false;
 
-	ra = a.half_lengths.y;
-	rb = b.half_lengths.x * R.a [1] [0] + b.half_lengths.y * R.a [1] [1];
-	if ( std::abs( t.y ) > ra + rb ) return false;
+	float sep_ya = std::fabs( At.y ) - ( a.half_lengths.y + Rb.y );
+	if ( sep_ya > 0.0f ) return false;
 	
+	// B space
+	const auto Bt = b.orientation.inverse() * t;
+	const auto Ra = R.inverse() * a.half_lengths;
 
+	float sep_xb = std::fabs( Bt.x ) - ( b.half_lengths.x + Ra.x );
+	if ( sep_xb > 0.0f ) return false;
 
-	ra = a.half_lengths.x * R.a [0] [0] + a.half_lengths.y * R.a [1] [0];
-	rb = b.half_lengths.x;
-	if ( std::abs( t.x * R.a [0] [0] + t.y * R.a [1] [0] ) > ra + rb ) return false;
-
-	ra = a.half_lengths.x * R.a [0] [1] + a.half_lengths.y * R.a [1] [1];
-	rb = b.half_lengths.y;
-	if ( std::abs( t.x * R.a [0] [1] + t.y * R.a [1] [1] ) > ra + rb ) return false;
+	float sep_yb = std::fabs( Bt.y ) - ( b.half_lengths.x + Ra.y );
+	if ( sep_yb > 0.0f ) return false;
 
 	return true;
 }

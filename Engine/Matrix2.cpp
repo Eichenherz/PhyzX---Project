@@ -1,6 +1,7 @@
 #include "Matrix2.h"
 #include "PX_Math.h"
 #include <algorithm>
+#include <limits>
 
 Matrix2::Matrix2( float a_11, float a_12, float a_21, float a_22 )
 	:
@@ -56,7 +57,8 @@ Matrix2& Matrix2::make_abs()
 		std::for_each( r.begin(), r.end(), 
 					   [] ( float& comp ) 
 					   {
-						   comp = std::fabs( comp ) + EPSILON;
+						   comp = std::fabs( comp ) + 
+								  std::numeric_limits<float>::epsilon();
 					   } );
 	}
 

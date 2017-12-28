@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <array>
 
 enum class Vec_Type
 {
@@ -93,21 +94,25 @@ public:
 	{
 		return { -this->y, this->x };
 	}
-	Vec2_&	Negate()
-	{
-		this->x = -x;
-		this->y = -y;
-
-		return *this;
-	}
+	
 
 	bool	is_Column() const
 	{
 		return t == Vec_Type::COLUMN;
 	}
+
 public:
-	T x;
-	T y;
+	union
+	{
+		struct
+		{
+			T x;
+			T y;
+		};
+
+		std::array<T, 2> v;
+	};
+	
 };
 
 using FVec2 = Vec2_<float>;
