@@ -15,7 +15,7 @@ PX_OBB::PX_OBB( const IVec2& pos, int width, int height, const Radians& theta )
 	orientation		{ theta }
 {}
 
-IVec2 PX_OBB::Get_Vetrex( Tratis_Index idx ) const
+IVec2 PX_OBB::Get_Vetrex( Traits_Index idx ) const
 {
 	const auto sgn_x = cos( PI_OVER_4 + int( idx ) * PI_OVER_2 );
 	const auto sgn_y = sin( PI_OVER_4 + int( idx ) * PI_OVER_2 );
@@ -24,18 +24,18 @@ IVec2 PX_OBB::Get_Vetrex( Tratis_Index idx ) const
 				   int( std::copysign( half_lengths.y, sgn_y ) ) };
 }
 
-std::array<IVec2, 2> PX_OBB::Get_Face_Vertices( Tratis_Index idx ) const
+std::array<IVec2, 2> PX_OBB::Get_Face_Vertices( Traits_Index idx ) const
 {
 	std::array<IVec2, 2> vertices;
 
 	vertices [0] = Get_Vetrex( idx );
-	idx = ( idx == Tratis_Index::T4 ) ? Tratis_Index::T1 : Tratis_Index( int( idx ) + 1 );
+	idx = ( idx == Traits_Index::T4 ) ? Traits_Index::T1 : Traits_Index( int( idx ) + 1 );
 	vertices [1] = Get_Vetrex( idx );
 
 	return vertices;
 }
 
-IVec2 PX_OBB::Get_Face_Normal( Tratis_Index idx ) const
+IVec2 PX_OBB::Get_Face_Normal( Traits_Index idx ) const
 {
 	const int x = (int) cos( int( idx ) * PI_OVER_2 );
 	const int y = (int) sin( int( idx ) * PI_OVER_2 );
@@ -79,10 +79,10 @@ bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 	return true;
 }
 
-std::pair<Scalar, Tratis_Index> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
+std::pair<Scalar, Traits_Index> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
 {
 	Scalar			best_distance;
-	Tratis_Index	min_sep_axis;
+	Traits_Index	min_sep_axis;
 	FVec2			t = a.orientation.inverse() * FVec2( b.center - a.center );
 	RotMtrx2		R = ( a.orientation.inverse() * b.orientation ).make_abs();
 	
@@ -95,12 +95,12 @@ std::pair<Scalar, Tratis_Index> Min_Separation_Axis( const PX_OBB& a, const PX_O
 	if ( Bias_Greater_Than( sep_x, sep_y ) )//sep_x > sep_y // what if equal ? 
 	{
 		best_distance = sep_x;
-		min_sep_axis  = std::signbit( t.x ) ? Tratis_Index::T1 : Tratis_Index::T3;
+		min_sep_axis  = std::signbit( t.x ) ? Traits_Index::T2 : Traits_Index::T4;
 	}
 	else 
 	{
 		best_distance = sep_y;
-		min_sep_axis  = std::signbit( t.y ) ? Tratis_Index::T2 : Tratis_Index::T4;
+		min_sep_axis  = std::signbit( t.y ) ? Traits_Index::T3 : Traits_Index::T1;
 	}
 
 	return { best_distance, min_sep_axis };
@@ -108,38 +108,24 @@ std::pair<Scalar, Tratis_Index> Min_Separation_Axis( const PX_OBB& a, const PX_O
 
 std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const PX_OBB& ref, const PX_OBB& inc )
 {
-	// inc reference frame
+	// Inc reference frame
 	FVec2	ref_normal = inc.orientation.inverse() * ref.orientation * FVec2( ref_n );
-	auto	normals = Klein_4_Normals();
-	Scalar	min_dot = std::numeric_limits<Scalar>::max();
-	size_t	best_normal_index;
-
-	for ( size_t i = 0; i < normals.size(); ++i )
+	Traits_Index inc_face_idx;
+	if ( Bias_Greater_Than( std::fabs( ref_normal.x ), std::fabs( ref_normal.y ) ))
 	{
-		const auto dot = Dot_Prod( ref_normal, normals [i] );
-		if ( dot < min_dot )
-		{
-			min_dot = dot;
-			best_normal_index = i;
-		}
+		inc_face_idx = ( std::signbit( ref_normal.x ) ) ? Traits_Index::T2 : Traits_Index::T4;
+	}
+	else
+	{
+		inc_face_idx = ( std::signbit( ref_normal.y ) ) ? Traits_Index::T3 : Traits_Index::T1;
 	}
 
-	std::array<IVec2, 2> incident_face;
-	if ( normals [best_normal_index].x == 0 )
-	{
-		incident_face [0] = IVec2 { int( std::copysign( inc.half_lengths.x, normals [best_normal_index].y )), inc.half_lengths.y };
-		incident_face [1] = IVec2 { int(-std::copysign( inc.half_lengths.x, normals [best_normal_index].y )), inc.half_lengths.y };
-	}
-	else //if ( normals [best_normal_index].y == 0 )
-	{
-		incident_face [0] = IVec2 { inc.half_lengths.x, int( std::copysign( inc.half_lengths.y, normals [best_normal_index].x )) };
-		incident_face [1] = IVec2 { inc.half_lengths.x, int(-std::copysign( inc.half_lengths.y, normals [best_normal_index].x )) };
-	}
-
+	std::array<IVec2, 2> incident_face = inc.Get_Face_Vertices( inc_face_idx );
+	
 	std::for_each( incident_face.begin(), incident_face.end(),
 				   [&] ( IVec2& vertex )
 				   {
-					   // A reference frame
+					   // Ref reference frame
 					   ref.orientation.inverse() * inc.orientation *= vertex;
 				   } );
 	

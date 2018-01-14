@@ -26,7 +26,7 @@ bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
 			OBB
 ============================
 */
-enum class Tratis_Index
+enum class Traits_Index
 {
 	//
 	//	VERTICES	----	 FACES		----	 FACE NORMALS
@@ -52,15 +52,15 @@ struct PX_OBB
 							PX_OBB( const IVec2& pos, int width, int height,
 									const Radians& theta = Radians { 0.0f } );
 	// Shape geometry data
-	IVec2					Get_Vetrex( Tratis_Index idx ) const;
-	std::array<IVec2, 2>	Get_Face_Vertices( Tratis_Index idx ) const;
-	IVec2					Get_Face_Normal( Tratis_Index idx ) const;
+	IVec2					Get_Vetrex( Traits_Index idx ) const;
+	std::array<IVec2, 2>	Get_Face_Vertices( Traits_Index idx ) const;
+	IVec2					Get_Face_Normal( Traits_Index idx ) const;
 };
 
 
 bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b );
 
-std::pair<Scalar, Tratis_Index> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b );
+std::pair<Scalar, Traits_Index> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b );
 
 std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const PX_OBB& a, const PX_OBB& b );
 
