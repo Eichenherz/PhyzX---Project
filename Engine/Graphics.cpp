@@ -376,17 +376,17 @@ void Graphics::Draw_Quad( const IVec2 & A, const IVec2 & B, const IVec2 & C, con
 {
 	/*	   ORIENTATION
 	*=======================
-	*		D------B
+	*		B------A
 	*		--------
 	*		--------
-	*		C------A
+	*		C------D
 	*=======================
 	*/
 
 	Draw_Line( A, B, c );
-	Draw_Line( B, D, c );
-	Draw_Line( D, C, c );
-	Draw_Line( C, A, c );
+	Draw_Line( B, C, c );
+	Draw_Line( C, D, c );
+	Draw_Line( D, A, c );
 }
 
 

@@ -155,6 +155,9 @@
     <ClCompile Include="Matrix2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PX_Collision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="FramebufferPS.hlsl">

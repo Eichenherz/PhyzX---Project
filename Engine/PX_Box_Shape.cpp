@@ -2,44 +2,7 @@
 #include "PX_Physical_Traits.h"
 #include <math.h>
 #include "Graphics.h"
-#include "Rect.h"
 
-bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b )
-{
-	return	
-		std::abs( b.center.x - a.center.x ) < ( b.half_lengths.x + a.half_lengths.x ) &&
-		std::abs( b.center.y - a.center.y ) < ( b.half_lengths.y + a.half_lengths.y );
-}
-
-bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
-{
-	FVec2		t = FVec2( b.center - a.center );
-	RotMtrx2	R = a.orientation.inverse() * b.orientation;
-
-	R.make_abs();
-
-	// A space
-	const auto At = a.orientation.inverse() * t;
-	const auto Rb = R * b.half_lengths;
-
-	float sep_xa = std::fabs( At.x ) - ( a.half_lengths.x + Rb.x );
-	if ( sep_xa > 0.0f ) return false;
-
-	float sep_ya = std::fabs( At.y ) - ( a.half_lengths.y + Rb.y );
-	if ( sep_ya > 0.0f ) return false;
-	
-	// B space
-	const auto Bt = b.orientation.inverse() * t;
-	const auto Ra = R.inverse() * a.half_lengths;
-
-	float sep_xb = std::fabs( Bt.x ) - ( b.half_lengths.x + Ra.x );
-	if ( sep_xb > 0.0f ) return false;
-
-	float sep_yb = std::fabs( Bt.y ) - ( b.half_lengths.x + Ra.y );
-	if ( sep_yb > 0.0f ) return false;
-
-	return true;
-}
 
 
 //======================================================================//
@@ -72,7 +35,7 @@ void PX_Box_Shape::Transform( const PX_Pose_Data& pose )
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 {
 	// A, B, C, D
-	auto vertices = Klein_4( OBB.half_lengths.x, OBB.half_lengths.y );
+	auto vertices = Klein_4_Vertices( OBB.half_lengths.x, OBB.half_lengths.y );
 	std::for_each( vertices.begin(), vertices.end(), 
 				   [&] ( IVec2& vertex ) 
 				   {
