@@ -11,14 +11,14 @@
 struct PX_Mass_Data // Mass_Properties
 {
 	IVec2	center; // of mass
-	float	mass;
-	float	I; // @ CM
+	Scalar	mass;
+	Scalar	I; // @ CM
 
-	PX_Mass_Data( float mass, int side, const IVec2& pos )
+	PX_Mass_Data( Scalar mass, int side, const IVec2& pos )
 		:
 		mass	{ mass },
 		center  { pos.x + side / 2, pos.y + side / 2 },
-		I		{ 1.0f/6.0f * mass * float( side * side )  }
+		I		{ 1.0f/6.0f * mass * Scalar( side * side )  }
 	{}
 };
 
@@ -39,22 +39,16 @@ struct PX_Pose_Data
 	{}
 };
 
-struct PX_Kinetic_Data
+struct PX_Kinematic_Data
 {
 	FVec2	linear_vel;
-	float	angular_vel;
+	Scalar	angular_vel;
 
-	PX_Kinetic_Data( const FVec2& lvel,  float avel )
+	PX_Kinematic_Data( const FVec2& lvel,  Scalar avel )
 		:
 		linear_vel		{ lvel },
 		angular_vel		{ avel }
 	{}
-};
-
-struct PX_Dynamic_Data
-{
-	FVec2	force;
-	float	torque;
 };
 
 //======================================================================//
@@ -65,29 +59,30 @@ struct PX_Dynamic_Data
 class PX_Rigid_Body_Physics
 {
 public:
-							PX_Rigid_Body_Physics( float mass, int side, const IVec2& mass_ct, 
+								PX_Rigid_Body_Physics( Scalar mass, int side, const IVec2& mass_ct, 
 												   PX_Pose_Data&  pose );
 
-	void					Apply_Force( const FVec2& force, const IVec2& app_pt );
-	void					Halt_Force();
-	void					Update_Kinetic_State( float dt );
-	const PX_Kinetic_Data&	Kinetic_Status() const;
-	PX_Kinetic_Data&		Kinetic_Status();
+	void						Apply_Force( const FVec2& force, const IVec2& app_pt );
+	void						Halt_Force();
+	void						Update_Kinematic_State( Scalar dt );
+	const PX_Kinematic_Data&	Kinematic_Status() const;
+	PX_Kinematic_Data&			Kinematic_Status();
 
 public://private:
-	PX_Mass_Data			mass_data;
-	PX_Dynamic_Data			resultant;
-	PX_Kinetic_Data			kinetic_state;
-	PX_Pose_Data&			pose_data;
+	PX_Mass_Data				mass_data;
+	PX_Pose_Data&				pose_data;
+	PX_Kinematic_Data			kinematic_state;
+	struct PX_Dynamic_Data
+	{
+		FVec2	force = FVec2 { 0.0f,0.0f };
+		Scalar	torque = Scalar(0);
+	}resultant;
 
-	const float				static_linear_friction;
-	const float				kinetic_linear_friction;
-	const float				static_angular_friction;
-	const float				kinetic_angular_friction;
+	const Scalar				static_linear_friction;
+	const Scalar				kinetic_linear_friction;
+	const Scalar				static_angular_friction;
+	const Scalar				kinetic_angular_friction;
 
-	auto					Linear_Friction() const;
-	float					Angular_Friction() const;
-
-	auto					Linear_Accelereation() const;
-	float					Angular_Acceleration() const;
+	FVec2						Linear_Friction() const;
+	Scalar						Angular_Friction() const;
 };
