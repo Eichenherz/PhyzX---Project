@@ -39,6 +39,17 @@ struct Radians
 	void		Normalize();
 };
 
+struct Line
+{
+	IVec2	normal;	// mut be normalized
+	Scalar	c;		// distance to orign
+
+	Scalar	Line_Point_Distance( const IVec2& pt );
+	Line	Negated();
+};
+
+Scalar Point_Point_Distance_Sq( const IVec2& p1, const IVec2& p2 );
+
 std::array<IVec2, 4> Klein_4_Vertices( int x, int y );
 std::array<IVec2, 4> Klein_4_Faces( const std::array<IVec2, 4>& vertices );
 std::array<IVec2, 4> Klein_4_Normals( const std::array<IVec2, 4>& vertices );

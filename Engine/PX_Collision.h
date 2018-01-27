@@ -21,6 +21,7 @@ struct PX_AABB
 
 bool AABB_Intersection( const PX_AABB& a, const PX_AABB& b );
 
+
 /*
 ============================
 			OBB
@@ -33,15 +34,16 @@ struct PX_OBB
 	RotMtrx2	orientation;
 
 
-							PX_OBB( const IVec2& pos, int width, int height,
-									const Radians& theta = Radians { 0.0f } );
+	PX_OBB( const IVec2& pos, int width, int height,
+			const Radians& theta = Radians { 0.0f } );
 };
 
 bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b );
 
+
 /*
 ============================
-	   SAT NARROWPHASE
+	  GEOMERTY QUERY
 ============================
 */
 enum class Traits_ID
@@ -59,6 +61,7 @@ enum class Traits_ID
 	/*X_neg*/ T3,
 	/*Y_neg*/ T4
 };
+
 class Geometry_Query
 {
 public:
@@ -66,17 +69,42 @@ public:
 	IVec2					Get_Vetrex( Traits_ID idx ) const;
 	std::array<IVec2, 2>	Get_Face_Vertices( Traits_ID idx ) const;
 	IVec2					Get_Face_Normal( Traits_ID idx ) const;
-	const PX_OBB&			Get_OBB() const;// change to const PX_OBB* if & doesn't work
+	const RotMtrx2&			Get_Coord_Frame() const;// change to const PX_OBB* if & doesn't work
 	void					Swap( Geometry_Query& other );
 
 private:
 	const PX_OBB* obb;
 };
 
+
+/*
+============================
+	 COLLISION MANIFOLD
+============================
+*/
+struct Contact_Point
+{
+	IVec2	position;
+	IVec2	normal;
+	Scalar	penetration;
+};
+
+struct Manifold
+{
+	std::array<Contact_Point, 2>	contacts;
+	PX_OBB&							a;
+	PX_OBB&							b;
+};
+
+/*
+============================
+	   SAT NARROWPHASE
+============================
+*/
 std::pair<Scalar, Traits_ID> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b );
 
-std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const PX_OBB& a, const PX_OBB& b );
+std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Query& a, const Geometry_Query& b );
 
-void Clip( const IVec2& ref_n, const IVec2* const ref_face, const IVec2* inc_face );
+std::array<IVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<IVec2, 2>& face );
 
-void SAT( const PX_OBB& a, const PX_OBB& b );
+void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b );

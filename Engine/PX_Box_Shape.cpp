@@ -28,8 +28,8 @@ const IVec2& PX_Box_Shape::Center() const
 
 void PX_Box_Shape::Transform( const PX_Pose_Data& pose )
 {
-	Translate( pose.pos );
-	Rotate( pose.orientation.rads );
+	OBB.center += pose.pos;
+	OBB.orientation = RotMtrx2( pose.orientation.rads );// *= for nice effect;
 }
 
 void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
@@ -51,15 +51,4 @@ void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 	//gfx.Draw_Line( start_point, IVec2( OBB.orientation.Basis_Y() * 200 ) + start_point, Colors::Yellow );
 
 	gfx.Draw_Line( OBB.center, vertices[0], Colors::Magenta );
-}
-
-void PX_Box_Shape::Translate( const IVec2& displacement )
-{
-	OBB.center += displacement;
-}
-
-void PX_Box_Shape::Rotate( float theta )
-{
-	OBB.orientation = RotMtrx2( theta );//
-	// *= for nice effect;
 }

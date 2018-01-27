@@ -118,12 +118,7 @@ using IVec2 = Vec2_<int>;
 template<class Vec1, class Vec2>
 float Dot_Prod( const Vec1& vec1, const Vec2& vec2 )
 {
-	return vec1.x * vec2.x + vec1.y * vec2.y;
-}
-
-template<class IVec, class FVec>
-FVec2 Cross_Prod( const IVec& vec1, const FVec& vec2 )
-{
+	return float( vec1.x ) * float( vec2.x ) + float( vec1.y ) * float( vec2.y );// ouch
 }
 
 template<class Vec1, class Vec2>

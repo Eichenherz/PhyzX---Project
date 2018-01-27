@@ -66,7 +66,7 @@ bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 
 /*
 ============================
-	   SAT NARROWPHASE
+	  GEOMERTY QUERY
 ============================
 */
 Geometry_Query::Geometry_Query( const PX_OBB& obb )
@@ -95,25 +95,34 @@ std::array<IVec2, 2> Geometry_Query::Get_Face_Vertices( Traits_ID idx ) const
 	return vertices;
 }
 
-IVec2 Geometry_Query::Get_Face_Normal( Traits_ID idx ) const
+IVec2 Geometry_Query::Get_Face_Normal( Traits_ID idx ) const 
 {
-	const int x = (int) cos( int( idx ) * PI_OVER_2 );
-	const int y = (int) sin( int( idx ) * PI_OVER_2 );
-	return IVec2 { x, y };
+	const auto face = Get_Face_Vertices( idx );
+	IVec2 face_normal = ( face [1] - face [0] ).Normalize().Make_Perp();
+	return face_normal;
+
+	// This will cause errors due to floating point. I.E. face { 0, 0 }
+	//const int x = (int) cos( int( idx ) * PI_OVER_2 );
+	//const int y = (int) sin( int( idx ) * PI_OVER_2 );
 }
 
-const PX_OBB& Geometry_Query::Get_OBB() const //////
+const RotMtrx2& Geometry_Query::Get_Coord_Frame() const //////
 {
-	auto temp = &obb;
-	return reinterpret_cast<const PX_OBB&>(temp);
+	return obb->orientation;
 }
 
 void Geometry_Query::Swap( Geometry_Query& other )
 {
-	assert( this->obb == other.obb );
+	assert( this->obb != other.obb );
 	std::swap( this->obb, other.obb );
 }
 
+
+/*
+============================
+	   SAT NARROWPHASE
+============================
+*/
 std::pair<Scalar, Traits_ID> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
 {
 	Scalar			best_distance;
@@ -131,9 +140,7 @@ std::pair<Scalar, Traits_ID> Min_Separation_Axis( const PX_OBB& a, const PX_OBB&
 	{
 		best_distance = sep_x;
 		min_sep_axis  = std::signbit( t.x ) ? Traits_ID::T2 : Traits_ID::T4;
-	}
-	else 
-	{
+	} else {
 		best_distance = sep_y;
 		min_sep_axis  = std::signbit( t.y ) ? Traits_ID::T3 : Traits_ID::T1;
 	}
@@ -144,23 +151,21 @@ std::pair<Scalar, Traits_ID> Min_Separation_Axis( const PX_OBB& a, const PX_OBB&
 std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Query& ref, const Geometry_Query& inc )
 {
 	// Inc reference frame
-	const auto		inc_frame = inc.Get_OBB().orientation.inverse() * ref.Get_OBB().orientation;
+	const auto		inc_frame = inc.Get_Coord_Frame().inverse() * ref.Get_Coord_Frame();
 	FVec2			ref_normal = inc_frame * FVec2( -ref_n ); // Flip normal to obtain correct face & not the opposite one.
 	Traits_ID		inc_face_idx;
 
 	if ( Bias_Greater_Than( std::fabs( ref_normal.x ), std::fabs( ref_normal.y ) ))
 	{
 		inc_face_idx = ( std::signbit( ref_normal.x ) ) ? Traits_ID::T3 : Traits_ID::T1;
-	}
-	else
-	{
+	} else {
 		inc_face_idx = ( std::signbit( ref_normal.y ) ) ? Traits_ID::T4 : Traits_ID::T2;
 	}
 
 	std::array<IVec2, 2> incident_face = inc.Get_Face_Vertices( inc_face_idx );
 	
 	// Ref reference frame
-	const auto		ref_frame = inc_frame.inverse();//ref.Get_OBB().orientation.inverse() * inc.Get_OBB().orientation;
+	const auto		ref_frame = inc_frame.inverse();//ref.Get_Coord_Frame().orientation.inverse() * inc.Get_Coord_Frame().orientation;
 	std::for_each( incident_face.begin(), incident_face.end(),
 				   [&] ( IVec2& vertex )
 				   {
@@ -170,16 +175,31 @@ std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Quer
 	return incident_face;
 }
 
-void Clip( const IVec2 & ref_n, const IVec2* const ref_face, const IVec2* inc_face )
+std::array<IVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<IVec2, 2>& face ) // might need to use IVec2 only for plotting.
 {
-	// Compute side planes
-	Scalar pos_plane =  Dot_Prod( ref_face [1] - ref_face [0], ref_face [1] );
-	Scalar neg_plane = -Dot_Prod( ref_face [1] - ref_face [0], ref_face [0] );
+	std::array<IVec2, 2>	segment;
+	int						idx = 0;
+	// Distances from corresponding points to line l.
+	Scalar d0 = Dot_Prod( l.normal, face [0] ) - l.c;
+	Scalar d1 = Dot_Prod( l.normal, face [1] ) - l.c;
+	
+	// Case 1 : both points lie behind( negative ) the plane.
+	if ( d0 <= Scalar( 0 ) ) { segment [idx++] = face [0]; }
+	if ( d1 <= Scalar( 0 ) ) { segment [idx++] = face [1]; }
 
-
+	// Case 2 : pts lie on different sides of the plane.
+	if ( d0 * d1 < Scalar( 0 ) ) // less than to ignore -0.0f
+	{
+		// lerp to find intersection point.
+		const Scalar interp = d0 / ( d0 - d1 );
+		segment [idx] = face [0] * ( Scalar( 1 ) - interp ) + face [1] * interp;
+		++idx;
+	}
+	assert( idx != 3 );
+	return segment;
 }
 
-void SAT( const PX_OBB& a, const PX_OBB& b )
+void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 {
 	auto penetrationA = Min_Separation_Axis( a, b );
 	if ( penetrationA.first > 0.0f ) return;
@@ -187,25 +207,56 @@ void SAT( const PX_OBB& a, const PX_OBB& b )
 	auto penetrationB = Min_Separation_Axis( b, a );
 	if ( penetrationB.first > 0.0f ) return;
 
-
+	// Need face query & edge query !
 	Geometry_Query			ref { a };
 	Geometry_Query			inc { b };
-	Scalar					penetration_depth;
 	Traits_ID				trait_id;
+	bool					flip = false;
 	
+	// Select ref & inc face. 
 	if ( Bias_Greater_Than( penetrationA.first, penetrationB.first ) )
 	{
-		penetration_depth = penetrationA.first;
 		trait_id = penetrationA.second;
-	}
-	else // need to flip sign when passing to manifold
-	{
-		penetration_depth = penetrationB.first;
+	} else {
 		trait_id = penetrationB.second;
-		ref.Swap( inc ); 
+		ref.Swap( inc );
+		flip = true;
 	}
+
+	// Coord frame is ref box frame.
  
 	IVec2					ref_face_normal = ref.Get_Face_Normal( trait_id );
-	std::array<IVec2, 2>	ref_face_vertices = ref.Get_Face_Vertices( trait_id );
 	std::array<IVec2, 2>	inc_face_vertices = Find_Incident_Face( ref_face_normal, ref, inc );
+
+	std::array<IVec2, 2>	ref_face_vertices = ref.Get_Face_Vertices( trait_id );
+	// Gather data to compute side planes
+	IVec2					side_plane_normal = ( ref_face_vertices [1] - ref_face_vertices [0] ).Normalize();
+	Scalar					pos_plane =  Dot_Prod( side_plane_normal, ref_face_vertices [1] );
+	//Scalar					neg_plane = -Dot_Prod( side_plane_normal, ref_face_vertices [0] );
+	Line					l { side_plane_normal, pos_plane };
+
+	auto neg_clip = Clip_Segment_to_Line( l.Negated()/*{ -side_plane_normal, neg_plane }*/, inc_face_vertices );
+	if ( neg_clip.size() < 2 ) return;
+	inc_face_vertices = std::move( neg_clip );
+
+	auto pos_clip = Clip_Segment_to_Line( l, inc_face_vertices );
+	if ( pos_clip.size() < 2 ) return;
+	inc_face_vertices = std::move( pos_clip );
+
+	// Generate manifold ( transform to world coords. )
+	const Scalar	d_to_ref_face = Dot_Prod( ref_face_normal, ref_face_vertices [0] );
+	int				ct_pts = 0;
+	std::for_each( inc_face_vertices.begin(), inc_face_vertices.end(),
+				   [&] ( IVec2& vertex ) 
+				   {
+					   const Scalar penetration = Dot_Prod( ref_face_normal, vertex ) - d_to_ref_face;
+					   if ( penetration <= Scalar( 0 ) )
+					   {
+						   assert( ct_pts <= 2 );
+						   m.contacts [ct_pts].normal		= ( flip ) ? ref_face_normal : -ref_face_normal; // Normal goes from inc to normal
+						   m.contacts [ct_pts].position		= ref.Get_Coord_Frame() * vertex;
+						   m.contacts [ct_pts].penetration	= std::fabs( penetration );
+						   ++ct_pts;
+					   }
+				   } );
 }

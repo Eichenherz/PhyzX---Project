@@ -40,6 +40,12 @@ void Radians::Normalize()
 	}
 }
 
+Scalar Point_Point_Distance_Sq( const IVec2 & p1, const IVec2 & p2 )
+{
+	auto v = ( p1 - p2 );
+	return Dot_Prod( v, v );
+}
+
 std::array<IVec2, 4> Klein_4_Vertices( int x, int y )
 {
 	std::array<IVec2, 4> k4;
@@ -88,4 +94,14 @@ bool Bias_Greater_Than( Scalar a, Scalar b )
 
 	// >= instead of > for NaN comparison safety
 	return a >= b * relative_bias + a * absolute_bias;
+}
+
+Scalar Line::Line_Point_Distance( const IVec2 & pt )
+{
+	return Dot_Prod( pt, normal ) - c;
+}
+
+Line Line::Negated()
+{
+	return Line { -this->normal, -this->c };
 }

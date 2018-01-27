@@ -15,8 +15,7 @@ public:
 	void			Draw( class Graphics& gfx, class Color c ) const;
 
 
-	PX_OBB		OBB;
+	PX_OBB			OBB;
 private:
-	void			Rotate( float theta );
-	void			Translate( const IVec2& displacement );
+	
 };
