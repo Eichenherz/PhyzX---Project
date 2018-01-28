@@ -51,50 +51,73 @@ void Game::Go()
 
 void Game::UpdateModel( float dt )
 {
-	/*
-	FVec2 f { 50.0f, 50.0f };
-	FVec2 g = -f;
-
-	if ( wnd.mouse.LeftIsPressed() && flag == false )
+	if ( wnd.kbd.KeyIsPressed( VK_SPACE ) && !flag )
 	{
-	phyzx.Apply_Force( f, box.Center() + IVec2 { box_side, box_side / 8 } );
-	phyzx.Apply_Force( g, box.Center() + IVec2 { -box_side, -box_side / 8 } );
-	flag = true;
-	}
-	if ( !wnd.mouse.LeftIsPressed() )
+		switch_box = true;
+		flag = true;
+	} 
+	else if ( wnd.kbd.KeyIsPressed( VK_RETURN ) && !flag )
 	{
-	flag = false;
-	}
-
-	if ( wnd.mouse.RightIsPressed() )
-	{
-	phyzx.Halt_Force();
-	}
-	phyzx.Update_Kinetic_State( dt );
-	pose.pos = IVec2( phyzx.Kinetic_Status().linear_vel * dt );
-	pose.orientation += phyzx.Kinetic_Status().angular_vel * dt;
-
-	box.Transform( pose );
-	*/
-
-	if ( wnd.kbd.KeyIsPressed( VK_LEFT ) && !flag )
-	{
-		angleA += Radians { 0.15f };
+		switch_box = false;
 		flag = true;
 	}
-	if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) && !flag )
+
+	if ( wnd.mouse.LeftIsPressed() && !flag )
 	{
-		angleB += Radians { -0.15f };
+		if ( !switch_box )
+		{
+			angleA += Radians { 0.15f };
+		} else {
+			angleB += Radians { 0.15f };
+		}
+		flag = true;
+	}
+	if ( wnd.mouse.RightIsPressed() && !flag )
+	{
+		if ( !switch_box )
+		{
+			angleA += Radians { -0.15f };
+		} else {
+			angleB += Radians { -0.15f };
+		}
+		flag = true;
+	}
+	else flag = false; // allows rotation & translation on the same call of UpdateModel. kind of
+
+
+	IVec2 delta_pos { 0,0 };
+	if ( wnd.kbd.KeyIsPressed( VK_UP ) && !flag )
+	{
+		delta_pos += { 0, -1 };
+		flag = true;
+	}
+	else if ( wnd.kbd.KeyIsPressed( VK_DOWN ) && !flag )
+	{
+		delta_pos += { 0, 1 };
+		flag = true;
+	}
+	else if ( wnd.kbd.KeyIsPressed( VK_LEFT ) && !flag )
+	{
+		delta_pos += { -1, 0 };
+		flag = true;
+	}
+	else if ( wnd.kbd.KeyIsPressed( VK_RIGHT ) && !flag )
+	{
+		delta_pos += { 1, 0 };
 		flag = true;
 	}
 	else flag = false;
 
-	pos = wnd.mouse.GetPos();
+	if ( !switch_box )
+	{
+		posA = delta_pos;
+	} else {
+		posB = delta_pos;
+	}
 
 	box.Transform( PX_Pose_Data { posA, angleA } );
 	boxB.Transform( PX_Pose_Data { posB, angleB } );
-
-	boxB.OBB.center = pos; // Quickly put your cursor @ screen_center after running program
+	
 
 	if ( OBB_Intersection( box.OBB, boxB.OBB ) )
 	{
@@ -117,8 +140,4 @@ void Game::ComposeFrame()
 		debug_text.DrawText( "Colliding!", { 10,10 }, Colors::Blue, gfx );
 		m.Debug_Draw( gfx );
 	}
-
-	//debug_text.DrawText( "Angular Vel " + std::to_string( phyzx.Kinetic_Status().angular_vel ), { 10,10 }, Colors::Blue, gfx );
-	//debug_text.DrawText( "Angular Friction " + std::to_string( phyzx.Angular_Friction() ), { 10,40 }, Colors::Blue, gfx );
-	//debug_text.DrawText( "Angular Accl " + std::to_string( phyzx.Angular_Acceleration() ), { 10,70 }, Colors::Blue, gfx );
 }

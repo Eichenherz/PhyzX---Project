@@ -50,14 +50,14 @@ private:
 	Graphics				gfx;
 	/********************************/
 	/*  User Variables              */
-	static constexpr float	euler_h = 0.015f;
+	static constexpr float	euler_h		= 0.015f;
 	const IVec2				screen_center;
 	Timer					ft;
 
-	static constexpr int	box_side = 50;
-	static constexpr float	mass = 5.0f;
-	Radians					angleA = 0.0f;
-	Radians					angleB = 0.785398163f;
+	static constexpr int	box_side	= 50;
+	static constexpr float	mass		= 5.0f;
+	Radians					angleA		= 0.0f;
+	Radians					angleB		= 0.785398163f;
 	IVec2					posA;
 	IVec2					posB;
 
@@ -66,10 +66,10 @@ private:
 	PX_Box_Shape			box;
 	PX_Box_Shape			boxB;
 
-	IVec2					pos;
-
-	bool					flag = false;
-	bool					collision = false;
+	bool					flag		= false;
+	bool					collision	= false;
+	bool					switch_box	= false;
+	bool					move_box	= false;
 	Font					debug_text;
 
 	Manifold				m;
