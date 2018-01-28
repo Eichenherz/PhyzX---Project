@@ -101,6 +101,8 @@ void Game::UpdateModel( float dt )
 		collision = true;
 	}
 	else collision = false;
+
+	SAT( m, box.OBB, boxB.OBB );
 }
 
 void Game::ComposeFrame()
@@ -113,6 +115,7 @@ void Game::ComposeFrame()
 	if ( collision )
 	{
 		debug_text.DrawText( "Colliding!", { 10,10 }, Colors::Blue, gfx );
+		m.Debug_Draw( gfx );
 	}
 
 	//debug_text.DrawText( "Angular Vel " + std::to_string( phyzx.Kinetic_Status().angular_vel ), { 10,10 }, Colors::Blue, gfx );

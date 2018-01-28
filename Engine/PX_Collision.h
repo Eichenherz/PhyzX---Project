@@ -69,10 +69,11 @@ public:
 	IVec2					Get_Vetrex( Traits_ID idx ) const;
 	std::array<IVec2, 2>	Get_Face_Vertices( Traits_ID idx ) const;
 	IVec2					Get_Face_Normal( Traits_ID idx ) const;
-	const RotMtrx2&			Get_Coord_Frame() const;// change to const PX_OBB* if & doesn't work
+	const RotMtrx2&			Get_Coord_Frame() const;
 	void					Swap( Geometry_Query& other );
+	
 
-private:
+//private: //public for debugging
 	const PX_OBB* obb;
 };
 
@@ -85,15 +86,19 @@ private:
 struct Contact_Point
 {
 	IVec2	position;
-	IVec2	normal;
 	Scalar	penetration;
 };
 
 struct Manifold
 {
+	const PX_OBB*					a; //ref
+	const PX_OBB*					b; //inc
+
 	std::array<Contact_Point, 2>	contacts;
-	PX_OBB&							a;
-	PX_OBB&							b;
+	IVec2							normal;
+	//IVec2							ref_center;// for debugging purposes.
+
+	void							Debug_Draw( class Graphics& gfx ) const;
 };
 
 /*

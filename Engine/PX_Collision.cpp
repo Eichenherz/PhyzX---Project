@@ -247,16 +247,58 @@ void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	const Scalar	d_to_ref_face = Dot_Prod( ref_face_normal, ref_face_vertices [0] );
 	int				ct_pts = 0;
 	std::for_each( inc_face_vertices.begin(), inc_face_vertices.end(),
-				   [&] ( IVec2& vertex ) 
+				   [&] ( const IVec2& vertex ) 
 				   {
 					   const Scalar penetration = Dot_Prod( ref_face_normal, vertex ) - d_to_ref_face;
 					   if ( penetration <= Scalar( 0 ) )
 					   {
-						   assert( ct_pts <= 2 );
-						   m.contacts [ct_pts].normal		= ( flip ) ? ref_face_normal : -ref_face_normal; // Normal goes from inc to normal
-						   m.contacts [ct_pts].position		= ref.Get_Coord_Frame() * vertex;
+						   assert( ct_pts <= 1 );
+						   m.contacts [ct_pts].position		= ref.Get_Coord_Frame() * vertex; // to world space
+						   m.contacts [ct_pts].position		+= inc.obb->center;
 						   m.contacts [ct_pts].penetration	= std::fabs( penetration );
 						   ++ct_pts;
 					   }
 				   } );
+	m.normal = ( flip ) ? ref_face_normal : -ref_face_normal; // Normal goes from ref to inc
+	ref.Get_Coord_Frame() *= m.normal;
+	// For debugging
+	m.normal *= 10;
+	//
+	m.normal += ref.obb->center;
+	//m.ref_center = std::move( ref.Get_Center() );
+	// For debugging purposes.
+	m.a = ref.obb;
+	m.b = inc.obb;
+}
+
+#include "Graphics.h"
+
+void Manifold::Debug_Draw( Graphics& gfx ) const
+{
+	// Draw collision normal from ref center
+	gfx.Draw_Line( a->center, normal, Colors::Yellow );
+
+	std::for_each( contacts.cbegin(), contacts.cend(),
+				   [&] ( const Contact_Point& ct_pt )
+				   {
+					   gfx.PutPixel( ct_pt.position.x, ct_pt.position.y, Colors::Magenta );
+					} );
+	// Draw contact pts as a box centered at these.
+	/*auto contact_box_vertices = Klein_4_Vertices( 5, 5 );
+	std::for_each( contact_box_vertices.begin(), contact_box_vertices.end(),
+				   [&] ( IVec2& vertex ) 
+				   {
+					   a->orientation *= vertex;
+				   } );
+	std::for_each( contacts.cbegin(), contacts.cend(), 
+				   [&] ( const Contact_Point& ct_pt ) 
+				   {
+					   std::for_each( contact_box_vertices.begin(), contact_box_vertices.end(),
+									  [&] ( IVec2& vertex )
+									  {
+										  vertex += ct_pt.position;
+									  } );
+					   gfx.Draw_Quad( contact_box_vertices [0], contact_box_vertices [1], 
+									  contact_box_vertices [2], contact_box_vertices [3], Colors::Magenta );
+				   } );*/
 }

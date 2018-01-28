@@ -28,6 +28,7 @@
 #include "PX_Box_Shape.h"
 #include "PX_Physical_Traits.h"
 #include "Font.h"
+#include "PX_Collision.h"
 
 class Game
 {
@@ -70,5 +71,7 @@ private:
 	bool					flag = false;
 	bool					collision = false;
 	Font					debug_text;
+
+	Manifold				m;
 	/********************************/
 };
