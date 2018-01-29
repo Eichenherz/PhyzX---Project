@@ -34,9 +34,28 @@ struct PX_OBB
 	RotMtrx2	orientation;
 
 
-	PX_OBB( const IVec2& pos, int width, int height,
-			const Radians& theta = Radians { 0.0f } );
+				PX_OBB( const IVec2& pos, int width, int height,
+						const Radians& theta = Radians { 0.0f } );
+
 };
+
+template<typename Vec>
+Vec& To_World_Frame( Vec& l, const PX_OBB& ref )
+{
+	ref.orientation *= l;
+	l += Vec(ref.center);
+
+	return l;
+}
+
+template<typename Vec>
+Vec& To_Local_Frame( Vec& w, const PX_OBB& ref )
+{
+	w -= Vec(ref.center);
+	ref.orientation.inverse() *= w;
+
+	return w;
+}
 
 bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b );
 
@@ -94,10 +113,19 @@ struct Manifold
 	const PX_OBB*					a; //ref
 	const PX_OBB*					b; //inc
 
+	// Debug only
+	Manifold( const PX_OBB& a, const PX_OBB& b)
+		:
+		a { &a },
+		b { &b }
+	{}
+	//
+
 	std::array<Contact_Point, 2>	contacts;
 	IVec2							normal;
 	//IVec2							ref_center;// for debugging purposes.
 
+	void							Min_Sep_Axis_Debug( class Graphics& gfx, const class Font& f );
 	void							Debug_Draw( class Graphics& gfx ) const;
 };
 
@@ -106,10 +134,10 @@ struct Manifold
 	   SAT NARROWPHASE
 ============================
 */
-std::pair<Scalar, Traits_ID> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b );
+std::pair<Scalar, FVec2> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b );
 
 std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Query& a, const Geometry_Query& b );
 
 std::array<IVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<IVec2, 2>& face );
 
-void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b );
+void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b );

@@ -30,7 +30,8 @@ Game::Game( MainWindow& wnd )
 	poseB			{ screen_center + IVec2 { box_side, box_side / 4 }, angleB },
 	box				{ pose.pos, box_side, box_side },
 	boxB			{ poseB.pos, box_side, box_side },
-	debug_text		{ "Images\\Fixedsys16x28.bmp" }
+	debug_text		{ "Images\\Fixedsys16x28.bmp" },
+	m				{ box.OBB, boxB.OBB }
 {
 }
 
@@ -125,7 +126,7 @@ void Game::UpdateModel( float dt )
 	}
 	else collision = false;
 
-	SAT( m, box.OBB, boxB.OBB );
+	//SAT_Narrowphase( m, box.OBB, boxB.OBB );
 }
 
 void Game::ComposeFrame()
@@ -138,6 +139,7 @@ void Game::ComposeFrame()
 	if ( collision )
 	{
 		debug_text.DrawText( "Colliding!", { 10,10 }, Colors::Blue, gfx );
-		m.Debug_Draw( gfx );
+		m.Min_Sep_Axis_Debug( gfx, debug_text );
+		//m.Debug_Draw( gfx );
 	}
 }

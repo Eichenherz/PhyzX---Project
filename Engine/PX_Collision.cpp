@@ -1,7 +1,10 @@
 #include "PX_Collision.h"
 
 using namespace CONSTANTS;
-
+ static std::array<std::array<FVec2, 2>, 2 > box_face_normals {
+	FVec2 { 1.0f,0.0f }, FVec2 { -1.0f, 0.0f } , // x[0,0], -x[1,0]
+	FVec2 { 0.0f,1.0f }, FVec2 {  0.0f,-1.0f }   // y[1,0], -y[1,1]
+};
 /*
 ============================
 			AABB
@@ -123,26 +126,26 @@ void Geometry_Query::Swap( Geometry_Query& other )
 	   SAT NARROWPHASE
 ============================
 */
-std::pair<Scalar, Traits_ID> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
+std::pair<Scalar, FVec2> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
 {
-	Scalar			best_distance;
-	Traits_ID		min_sep_axis;
-	FVec2			t = a.orientation.inverse() * FVec2( b.center - a.center );
-	RotMtrx2		R = ( a.orientation.inverse() * b.orientation ).make_abs();
+	Scalar		best_distance;
+	FVec2		min_sep_axis;
+	FVec2		t = a.orientation.inverse() * FVec2( b.center - a.center );
+	RotMtrx2	R = ( a.orientation.inverse() * b.orientation ).make_abs();
 	
 
 	const auto	Rb = R * b.half_lengths;
 	Scalar		sep_x = std::fabs( t.x ) - ( a.half_lengths.x + Rb.x );
 	Scalar		sep_y = std::fabs( t.y ) - ( a.half_lengths.y + Rb.y );
 
-	
-	if ( Bias_Greater_Than( sep_x, sep_y ) )//sep_x > sep_y // what if equal ? 
+	// first problem : need to change signs
+	if ( sep_x >= sep_y )// Bias_Greater_Than( sep_x, sep_y )// what if equal ? 
 	{
 		best_distance = sep_x;
-		min_sep_axis  = std::signbit( t.x ) ? Traits_ID::T2 : Traits_ID::T4;
+		min_sep_axis = !std::signbit( t.x ) ? box_face_normals [1] [0] : box_face_normals [0] [0];
 	} else {
 		best_distance = sep_y;
-		min_sep_axis  = std::signbit( t.y ) ? Traits_ID::T3 : Traits_ID::T1;
+		min_sep_axis  = !std::signbit( t.y ) ? box_face_normals [1] [1] : box_face_normals [1] [0];
 	}
 
 	return { best_distance, min_sep_axis };
@@ -199,7 +202,7 @@ std::array<IVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<IVec2
 	return segment;
 }
 
-void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b )
+void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 {
 	auto penetrationA = Min_Separation_Axis( a, b );
 	if ( penetrationA.first > 0.0f ) return;
@@ -210,15 +213,15 @@ void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	// Need face query & edge query !
 	Geometry_Query			ref { a };
 	Geometry_Query			inc { b };
-	Traits_ID				trait_id;
+	Traits_ID				trait_id = Traits_ID::T1;
 	bool					flip = false;
 	
 	// Select ref & inc face. 
 	if ( Bias_Greater_Than( penetrationA.first, penetrationB.first ) )
 	{
-		trait_id = penetrationA.second;
+		//trait_id = penetrationA.second;
 	} else {
-		trait_id = penetrationB.second;
+		//trait_id = penetrationB.second;
 		ref.Swap( inc );
 		flip = true;
 	}
@@ -272,6 +275,32 @@ void SAT( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 }
 
 #include "Graphics.h"
+#include "Font.h"
+
+void Manifold::Min_Sep_Axis_Debug( Graphics& gfx, const Font& f )
+{
+	auto queryA = Min_Separation_Axis( *( this->a ), *( this->b ) );
+	auto queryB = Min_Separation_Axis( *( this->b ), *( this->a ) );
+
+	// Should scale normal by penetration along axis.
+	queryA.second *= queryA.first;
+	queryB.second *= queryB.first;
+
+	auto A_axis = To_World_Frame( queryA.second, *a );
+	auto B_axis = To_World_Frame( queryB.second, *b );
+
+	gfx.Draw_Line( a->center, IVec2( A_axis ), Colors::Cyan );
+	gfx.Draw_Line( b->center, IVec2( B_axis ), Colors::Cyan );
+
+	if ( queryA.first > queryB.first )
+	{
+		f.DrawText( "BLUE", { 10, 30 }, Colors::Blue, gfx );
+	}
+	else
+	{
+		f.DrawText( "RED", { 10, 30 }, Colors::Red, gfx );
+	}
+}
 
 void Manifold::Debug_Draw( Graphics& gfx ) const
 {
