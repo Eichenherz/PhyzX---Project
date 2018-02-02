@@ -27,7 +27,7 @@ Game::Game( MainWindow& wnd )
 	gfx				( wnd ),
 	screen_center	{ gfx.GetScreenRect().GetCenter() },
 	pose			{ screen_center, angleA },
-	poseB			{ screen_center + IVec2 { box_side, box_side / 4 }, angleB },
+	poseB			{ screen_center + IVec2 { box_side -20 , - box_side + 30 }, angleB },
 	box				{ pose.pos, box_side, box_side },
 	boxB			{ poseB.pos, box_side, box_side },
 	debug_text		{ "Images\\Fixedsys16x28.bmp" },
@@ -67,9 +67,9 @@ void Game::UpdateModel( float dt )
 	{
 		if ( !switch_box )
 		{
-			angleA += Radians { 0.15f };
+			angleA += Radians { 0.10f };
 		} else {
-			angleB += Radians { 0.15f };
+			angleB += Radians { 0.10f };
 		}
 		flag = true;
 	}
@@ -77,9 +77,9 @@ void Game::UpdateModel( float dt )
 	{
 		if ( !switch_box )
 		{
-			angleA += Radians { -0.15f };
+			angleA += Radians { -0.10f };
 		} else {
-			angleB += Radians { -0.15f };
+			angleB += Radians { -0.10f };
 		}
 		flag = true;
 	}

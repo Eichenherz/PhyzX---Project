@@ -54,7 +54,7 @@ private:
 	const IVec2				screen_center;
 	Timer					ft;
 
-	static constexpr int	box_side	= 50;
+	static constexpr int	box_side	= 100;
 	static constexpr float	mass		= 5.0f;
 	Radians					angleA		= 0.0f;
 	Radians					angleB		= 0.785398163f;

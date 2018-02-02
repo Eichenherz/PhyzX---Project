@@ -2,7 +2,7 @@
 
 using namespace CONSTANTS;
  static std::array<std::array<FVec2, 2>, 2 > box_face_normals {
-	FVec2 { 1.0f,0.0f }, FVec2 { -1.0f, 0.0f } , // x[0,0], -x[1,0]
+	FVec2 { 1.0f,0.0f }, FVec2 { -1.0f, 0.0f } , // x[0,0], -x[0,1]
 	FVec2 { 0.0f,1.0f }, FVec2 {  0.0f,-1.0f }   // y[1,0], -y[1,1]
 };
 /*
@@ -41,16 +41,17 @@ bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 	FVec2		t = FVec2( b.center - a.center );
 	RotMtrx2	R = ( a.orientation.inverse() * b.orientation ).make_abs();
 
+	const Scalar scale( 1000 ); // Floating point error test. Potential bug for parallel face-face overlap.
 
 	// A space
 	const auto At = a.orientation.inverse() * t;
 	const auto Rb = R * b.half_lengths;
 
 	float sep_xa = std::fabs( At.x ) - ( a.half_lengths.x + Rb.x );
-	if ( sep_xa > 0.0f ) return false;
+	if ( sep_xa > Scalar( scale ) * std::numeric_limits<Scalar>::epsilon() ) return false;
 
 	float sep_ya = std::fabs( At.y ) - ( a.half_lengths.y + Rb.y );
-	if ( sep_ya > 0.0f ) return false;
+	if ( sep_ya > Scalar( scale ) * std::numeric_limits<Scalar>::epsilon() ) return false;
 
 
 	// B space
@@ -58,10 +59,10 @@ bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 	const auto Ra = R.inverse() * a.half_lengths;//( b.orientation.inverse() * a.orientation ).make_abs() * a.half_lengths;
 
 	float sep_xb = std::fabs( Bt.x ) - ( b.half_lengths.x + Ra.x );
-	if ( sep_xb > 0.0f ) return false;
+	if ( sep_xb > Scalar( scale ) * std::numeric_limits<Scalar>::epsilon() ) return false;
 
-	float sep_yb = std::fabs( Bt.y ) - ( b.half_lengths.x + Ra.y );
-	if ( sep_yb > 0.0f ) return false;
+	float sep_yb = std::fabs( Bt.y ) - ( b.half_lengths.y + Ra.y );
+	if ( sep_yb > Scalar( scale ) * std::numeric_limits<Scalar>::epsilon() ) return false;
 
 	return true;
 }
@@ -129,23 +130,21 @@ void Geometry_Query::Swap( Geometry_Query& other )
 std::pair<Scalar, FVec2> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
 {
 	Scalar		best_distance;
-	FVec2		min_sep_axis;
-	FVec2		t = a.orientation.inverse() * FVec2( b.center - a.center );
+	FVec2		min_sep_axis; 
+	FVec2		t = a.orientation.inverse() * FVec2( b.center - a.center );				
 	RotMtrx2	R = ( a.orientation.inverse() * b.orientation ).make_abs();
 	
-
 	const auto	Rb = R * b.half_lengths;
 	Scalar		sep_x = std::fabs( t.x ) - ( a.half_lengths.x + Rb.x );
 	Scalar		sep_y = std::fabs( t.y ) - ( a.half_lengths.y + Rb.y );
 
-	// first problem : need to change signs
 	if ( sep_x >= sep_y )// Bias_Greater_Than( sep_x, sep_y )// what if equal ? 
 	{
 		best_distance = sep_x;
-		min_sep_axis = !std::signbit( t.x ) ? box_face_normals [1] [0] : box_face_normals [0] [0];
+		min_sep_axis  = std::signbit( t.x ) ? box_face_normals [0] [0] : box_face_normals [0] [1];
 	} else {
 		best_distance = sep_y;
-		min_sep_axis  = !std::signbit( t.y ) ? box_face_normals [1] [1] : box_face_normals [1] [0];
+		min_sep_axis  = std::signbit( t.y ) ? box_face_normals [1] [0] : box_face_normals [1] [1];
 	}
 
 	return { best_distance, min_sep_axis };
@@ -292,7 +291,7 @@ void Manifold::Min_Sep_Axis_Debug( Graphics& gfx, const Font& f )
 	gfx.Draw_Line( a->center, IVec2( A_axis ), Colors::Cyan );
 	gfx.Draw_Line( b->center, IVec2( B_axis ), Colors::Cyan );
 
-	if ( queryA.first > queryB.first )
+	if ( queryA.first > queryB.first ) //Bias_Greater_Than( queryA.first, queryB.first )
 	{
 		f.DrawText( "BLUE", { 10, 30 }, Colors::Blue, gfx );
 	}
