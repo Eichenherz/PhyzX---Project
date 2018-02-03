@@ -56,8 +56,8 @@ private:
 
 	static constexpr int	box_side	= 100;
 	static constexpr float	mass		= 5.0f;
-	Radians					angleA		= 0.0f;
-	Radians					angleB		= 0.785398163f;
+	Radians					angleA = 0.0f;//-0.785398163f/Scalar(2);
+	Radians					angleB = 0.0f;//0.785398163f;
 	IVec2					posA;
 	IVec2					posB;
 

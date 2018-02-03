@@ -49,5 +49,5 @@ void PX_Box_Shape::Draw( Graphics& gfx, Color c ) const
 	//IVec2 start_point = OBB.center - OBB.half_lengths * 4;
 	//gfx.Draw_Line( start_point, IVec2( OBB.orientation.Basis_X() * 200 ) + start_point, Colors::Yellow );
 	//gfx.Draw_Line( start_point, IVec2( OBB.orientation.Basis_Y() * 200 ) + start_point, Colors::Yellow );
-	gfx.Draw_Line( OBB.center, vertices[0], Colors::Magenta );
+	gfx.Draw_Line( OBB.center, vertices[0], Colors::Yellow );
 }

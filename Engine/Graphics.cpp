@@ -348,9 +348,7 @@ void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
 			const int x = int( inv_slope * ( y - y0 ) + float( x0 ) );
 			PutPixel( x, y, c );
 		}
-	}
-	else
-	{
+	} else {
 		if ( x0 > x_end )
 		{
 			std::swap( y0, y_end );

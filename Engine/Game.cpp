@@ -132,7 +132,7 @@ void Game::UpdateModel( float dt )
 void Game::ComposeFrame()
 {
 	box.Draw( gfx, Colors::Blue );
-	boxB.Draw( gfx, Colors::Red );
+	boxB.Draw( gfx, Colors::White );
 
 	//Debug
 	gfx.Draw_Line( box.Center(), boxB.Center(), Colors::Green );

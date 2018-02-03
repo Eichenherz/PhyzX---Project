@@ -80,11 +80,12 @@ Geometry_Query::Geometry_Query( const PX_OBB& obb )
 	obb { &obb }
 {}
 
-std::array<FVec2, 2> Geometry_Query::Get_Face_Vertices( const FVec2& normal ) const // redo
+std::array<FVec2, 2> Geometry_Query::Get_Face_Vertices( const FVec2& normal ) const
 {
 	const FVec2 half_lengths = FVec2( obb->half_lengths );
 	const FVec2 v { normal.x * half_lengths.x, normal.y * half_lengths.y };
-	
+	assert( v.x == Scalar( 0 ) || v.y == Scalar( 0 ) );
+
 	std::array<FVec2, 2> vertices;
 	if ( v.x == 0 )
 	{
@@ -144,9 +145,17 @@ std::array<FVec2, 2> Find_Incident_Face( const FVec2& ref_n, const Geometry_Quer
 {
 	// Inc reference frame
 	const auto		inc_frame = inc.Get_Coord_Frame().inverse() * ref.Get_Coord_Frame();
-	FVec2			ref_normal = inc_frame * FVec2( -ref_n ); // Flip normal to obtain correct face & not the opposite one.
+	const FVec2		ref_normal = inc_frame * FVec2( -ref_n ); // Flip normal to obtain correct face & not the opposite one.
+	FVec2			inc_face_normal;
 	
-	std::array<FVec2, 2> incident_face = inc.Get_Face_Vertices( ref_normal ); // bug
+	if ( std::fabs( ref_normal.x ) > std::fabs( ref_normal.y ) )
+	{
+		inc_face_normal = std::signbit( ref_normal.x ) ? box_face_normals [0] [1] : box_face_normals [0] [0];
+	} else {
+		inc_face_normal = std::signbit( ref_normal.y ) ? box_face_normals [1] [1] : box_face_normals [1] [0];
+	}
+
+	std::array<FVec2, 2> incident_face = inc.Get_Face_Vertices( inc_face_normal ); // bug
 	
 	// Ref reference frame
 	const auto		ref_frame = inc_frame.inverse();//ref.Get_Coord_Frame().orientation.inverse() * inc.Get_Coord_Frame().orientation;
@@ -211,9 +220,9 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	std::array<FVec2, 2>	ref_face_vertices = ref.Get_Face_Vertices( ref_face_normal );
 
 	// Gather data to compute side planes  //
-	FVec2					side_plane_normal = ( ref_face_vertices [1] - ref_face_vertices [0] ).Normalize();
-	Scalar					neg_plane = Dot_Prod( side_plane_normal, ref_face_vertices [1] );
-	Scalar					pos_plane = Dot_Prod( side_plane_normal, ref_face_vertices [0] );
+	const FVec2				side_plane_normal = ( ref_face_vertices [1] - ref_face_vertices [0] ).Normalize();
+	const Scalar			neg_plane = -Dot_Prod( side_plane_normal, ref_face_vertices [0] );
+	const Scalar			pos_plane =  Dot_Prod( side_plane_normal, ref_face_vertices [1] );
 
 	auto neg_clip = Clip_Segment_to_Line( { -side_plane_normal, neg_plane }, inc_face_vertices );
 	if ( neg_clip.size() < 2 ) return;
@@ -226,29 +235,23 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	// Generate manifold ( transform to world coords. )
 	const Scalar	d_to_ref_face = Dot_Prod( ref_face_normal, ref_face_vertices [0] );
 	int				ct_pts = 0;
-	//Scalar			penetration { 0 };
-
+	
 	std::for_each( inc_face_vertices.begin(), inc_face_vertices.end(),
 				   [&] ( const FVec2& vertex ) 
 				   {
 					   const Scalar separation = Dot_Prod( ref_face_normal, vertex ) - d_to_ref_face;
 					   if ( separation <= Scalar( 0 ) )
 					   {
-						   m.contacts [ct_pts].position		= IVec2(ref.Get_Coord_Frame() * vertex); // to world space
-						   m.contacts [ct_pts].position		+= inc.obb->center;				  // ct_pts are on inc box
+						   m.contacts [ct_pts].position = To_World_Frame( IVec2(vertex), *ref.obb );
 						   m.contacts [ct_pts].penetration	= std::fabs( separation );
 						   ++ct_pts;
 					   }
 				   } );
 
-
 	m.normal = ( flip ) ? IVec2( -ref_face_normal ) : IVec2( ref_face_normal ); // Normal goes from ref to inc
-	ref.Get_Coord_Frame() *= m.normal;
-	// For debugging
-	m.normal *= 10;
-	//
-	m.normal += ref.obb->center;
-	//m.ref_center = std::move( ref.Get_Center() );
+	m.normal = To_World_Frame( m.normal, *ref.obb );
+	
+
 	// For debugging purposes.
 	m.a = ref.obb;
 	m.b = inc.obb;
@@ -284,14 +287,15 @@ void Manifold::Min_Sep_Axis_Debug( Graphics& gfx, const Font& f )
 	}
 	else
 	{
-		f.DrawText( "RED", { 10, 30 }, Colors::Red, gfx );
+		f.DrawText( "WHITE", { 10, 30 }, Colors::White, gfx );
 	}
 }
 
 void Manifold::Debug_Draw( Graphics& gfx ) const
 {
 	// Draw collision normal from ref center
-	gfx.Draw_Line( a->center, normal, Colors::Yellow );
+	//const auto n = normal * 10;
+	//gfx.Draw_Line( a->center, normal, Colors::Yellow );
 
 	std::for_each( contacts.cbegin(), contacts.cend(),
 				   [&] ( const Contact_Point& ct_pt )
@@ -299,21 +303,24 @@ void Manifold::Debug_Draw( Graphics& gfx ) const
 					   gfx.PutPixel( ct_pt.position.x, ct_pt.position.y, Colors::Magenta );
 					} );
 	// Draw contact pts as a box centered at these.
-	/*auto contact_box_vertices = Klein_4_Vertices( 5, 5 );
+	/*
+	auto contact_box_vertices = Klein_4_Vertices( 5, 5 );
 	std::for_each( contact_box_vertices.begin(), contact_box_vertices.end(),
 				   [&] ( IVec2& vertex ) 
 				   {
 					   a->orientation *= vertex;
 				   } );
-	std::for_each( contacts.cbegin(), contacts.cend(), 
-				   [&] ( const Contact_Point& ct_pt ) 
+	std::for_each( contacts.begin(), contacts.end(),
+				   [&] ( const Contact_Point& contact )
 				   {
 					   std::for_each( contact_box_vertices.begin(), contact_box_vertices.end(),
 									  [&] ( IVec2& vertex )
 									  {
-										  vertex += ct_pt.position;
+										  vertex += contact.position;
 									  } );
 					   gfx.Draw_Quad( contact_box_vertices [0], contact_box_vertices [1], 
-									  contact_box_vertices [2], contact_box_vertices [3], Colors::Magenta );
-				   } );*/
+									  contact_box_vertices [2], contact_box_vertices [3], Colors::Green );
+				   } );
+	
+				 //  */
 }

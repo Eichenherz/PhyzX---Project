@@ -112,7 +112,7 @@ struct Manifold
 	const PX_OBB*					b; //inc
 
 	// Debug only
-	Manifold( const PX_OBB& a, const PX_OBB& b)
+									Manifold( const PX_OBB& a, const PX_OBB& b)
 		:
 		a { &a },
 		b { &b }
