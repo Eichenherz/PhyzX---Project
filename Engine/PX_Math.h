@@ -39,13 +39,21 @@ struct Radians
 	void		Normalize();
 };
 
+
 struct Line
 {
-	IVec2	normal;	// mut be normalized
+	FVec2	normal;	// mut be normalized
 	Scalar	c;		// distance to orign
 
-	Scalar	Line_Point_Distance( const IVec2& pt );
-	Line	Negated();
+			Line( const FVec2& n, Scalar c )
+				:
+				normal	{ n },
+				c		{ c }
+			{}
+	Scalar  Line_Point_Distance( const FVec2& pt )
+	{
+		return Dot_Prod( pt, normal ) - c;
+	}
 };
 
 Scalar Point_Point_Distance_Sq( const IVec2& p1, const IVec2& p2 );

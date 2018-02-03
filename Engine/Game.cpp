@@ -126,7 +126,7 @@ void Game::UpdateModel( float dt )
 	}
 	else collision = false;
 
-	//SAT_Narrowphase( m, box.OBB, boxB.OBB );
+	SAT_Narrowphase( m, box.OBB, boxB.OBB );
 }
 
 void Game::ComposeFrame()
@@ -140,6 +140,6 @@ void Game::ComposeFrame()
 	{
 		debug_text.DrawText( "Colliding!", { 10,10 }, Colors::Blue, gfx );
 		m.Min_Sep_Axis_Debug( gfx, debug_text );
-		//m.Debug_Draw( gfx );
+		m.Debug_Draw( gfx );
 	}
 }

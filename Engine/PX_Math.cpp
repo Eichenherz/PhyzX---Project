@@ -96,12 +96,4 @@ bool Bias_Greater_Than( Scalar a, Scalar b )
 	return a >= b * relative_bias + a * absolute_bias;
 }
 
-Scalar Line::Line_Point_Distance( const IVec2 & pt )
-{
-	return Dot_Prod( pt, normal ) - c;
-}
 
-Line Line::Negated()
-{
-	return Line { -this->normal, -this->c };
-}

@@ -85,9 +85,7 @@ class Geometry_Query
 {
 public:
 							Geometry_Query( const PX_OBB& obb ); //beware !
-	IVec2					Get_Vetrex( Traits_ID idx ) const;
-	std::array<IVec2, 2>	Get_Face_Vertices( Traits_ID idx ) const;
-	IVec2					Get_Face_Normal( Traits_ID idx ) const;
+	std::array<FVec2, 2>	Get_Face_Vertices( const FVec2& normal ) const;
 	const RotMtrx2&			Get_Coord_Frame() const;
 	void					Swap( Geometry_Query& other );
 	
@@ -136,8 +134,8 @@ struct Manifold
 */
 std::pair<Scalar, FVec2> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b );
 
-std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Query& a, const Geometry_Query& b );
+std::array<FVec2, 2> Find_Incident_Face( const FVec2& ref_n, const Geometry_Query& a, const Geometry_Query& b );
 
-std::array<IVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<IVec2, 2>& face );
+std::array<FVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<FVec2, 2>& face );
 
 void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b );

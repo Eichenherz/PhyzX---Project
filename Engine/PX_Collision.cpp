@@ -5,6 +5,8 @@ using namespace CONSTANTS;
 	FVec2 { 1.0f,0.0f }, FVec2 { -1.0f, 0.0f } , // x[0,0], -x[0,1]
 	FVec2 { 0.0f,1.0f }, FVec2 {  0.0f,-1.0f }   // y[1,0], -y[1,1]
 };
+
+
 /*
 ============================
 			AABB
@@ -76,38 +78,26 @@ bool OBB_Intersection( const PX_OBB& a, const PX_OBB& b )
 Geometry_Query::Geometry_Query( const PX_OBB& obb )
 	:
 	obb { &obb }
+{}
+
+std::array<FVec2, 2> Geometry_Query::Get_Face_Vertices( const FVec2& normal ) const // redo
 {
-}
-
-IVec2 Geometry_Query::Get_Vetrex( Traits_ID idx ) const
-{
-	const auto sgn_x = cos( PI_OVER_4 + int( idx ) * PI_OVER_2 );
-	const auto sgn_y = sin( PI_OVER_4 + int( idx ) * PI_OVER_2 );
-
-	return IVec2 { int( std::copysign( obb->half_lengths.x, sgn_x ) ),
-				   int( std::copysign( obb->half_lengths.y, sgn_y ) ) };
-}
-
-std::array<IVec2, 2> Geometry_Query::Get_Face_Vertices( Traits_ID idx ) const
-{
-	std::array<IVec2, 2> vertices;
-
-	vertices [0] = Get_Vetrex( idx );
-	idx = ( idx == Traits_ID::T4 ) ? Traits_ID::T1 : Traits_ID( int( idx ) + 1 );
-	vertices [1] = Get_Vetrex( idx );
+	const FVec2 half_lengths = FVec2( obb->half_lengths );
+	const FVec2 v { normal.x * half_lengths.x, normal.y * half_lengths.y };
+	
+	std::array<FVec2, 2> vertices;
+	if ( v.x == 0 )
+	{
+		vertices [0] = { -half_lengths.x, v.y };
+		vertices [1] = {  half_lengths.x, v.y };
+	} 
+	else if( v.y == 0 )
+	{
+		vertices [0] = { v.x, -half_lengths.y };
+		vertices [1] = { v.x,  half_lengths.y };
+	}
 
 	return vertices;
-}
-
-IVec2 Geometry_Query::Get_Face_Normal( Traits_ID idx ) const 
-{
-	const auto face = Get_Face_Vertices( idx );
-	IVec2 face_normal = ( face [1] - face [0] ).Normalize().Make_Perp();
-	return face_normal;
-
-	// This will cause errors due to floating point. I.E. face { 0, 0 }
-	//const int x = (int) cos( int( idx ) * PI_OVER_2 );
-	//const int y = (int) sin( int( idx ) * PI_OVER_2 );
 }
 
 const RotMtrx2& Geometry_Query::Get_Coord_Frame() const //////
@@ -150,26 +140,18 @@ std::pair<Scalar, FVec2> Min_Separation_Axis( const PX_OBB& a, const PX_OBB& b )
 	return { best_distance, min_sep_axis };
 }
 
-std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Query& ref, const Geometry_Query& inc )
+std::array<FVec2, 2> Find_Incident_Face( const FVec2& ref_n, const Geometry_Query& ref, const Geometry_Query& inc )
 {
 	// Inc reference frame
 	const auto		inc_frame = inc.Get_Coord_Frame().inverse() * ref.Get_Coord_Frame();
 	FVec2			ref_normal = inc_frame * FVec2( -ref_n ); // Flip normal to obtain correct face & not the opposite one.
-	Traits_ID		inc_face_idx;
-
-	if ( Bias_Greater_Than( std::fabs( ref_normal.x ), std::fabs( ref_normal.y ) ))
-	{
-		inc_face_idx = ( std::signbit( ref_normal.x ) ) ? Traits_ID::T3 : Traits_ID::T1;
-	} else {
-		inc_face_idx = ( std::signbit( ref_normal.y ) ) ? Traits_ID::T4 : Traits_ID::T2;
-	}
-
-	std::array<IVec2, 2> incident_face = inc.Get_Face_Vertices( inc_face_idx );
+	
+	std::array<FVec2, 2> incident_face = inc.Get_Face_Vertices( ref_normal ); // bug
 	
 	// Ref reference frame
 	const auto		ref_frame = inc_frame.inverse();//ref.Get_Coord_Frame().orientation.inverse() * inc.Get_Coord_Frame().orientation;
 	std::for_each( incident_face.begin(), incident_face.end(),
-				   [&] ( IVec2& vertex )
+				   [&] ( FVec2& vertex )
 				   {
 					   ref_frame *= vertex;
 				   } );
@@ -177,9 +159,9 @@ std::array<IVec2, 2> Find_Incident_Face( const IVec2& ref_n, const Geometry_Quer
 	return incident_face;
 }
 
-std::array<IVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<IVec2, 2>& face ) // might need to use IVec2 only for plotting.
+std::array<FVec2, 2> Clip_Segment_to_Line( const Line& l, const std::array<FVec2, 2>& face ) // might need to use IVec2 only for plotting.
 {
-	std::array<IVec2, 2>	segment;
+	std::array<FVec2, 2>	segment;
 	int						idx = 0;
 	// Distances from corresponding points to line l.
 	Scalar d0 = Dot_Prod( l.normal, face [0] ) - l.c;
@@ -209,59 +191,58 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	auto penetrationB = Min_Separation_Axis( b, a );
 	if ( penetrationB.first > 0.0f ) return;
 
-	// Need face query & edge query !
 	Geometry_Query			ref { a };
 	Geometry_Query			inc { b };
-	Traits_ID				trait_id = Traits_ID::T1;
+	FVec2					ref_face_normal;
 	bool					flip = false;
 	
 	// Select ref & inc face. 
 	if ( Bias_Greater_Than( penetrationA.first, penetrationB.first ) )
 	{
-		//trait_id = penetrationA.second;
+		ref_face_normal = penetrationA.second;
 	} else {
-		//trait_id = penetrationB.second;
+		ref_face_normal = penetrationB.second;
 		ref.Swap( inc );
 		flip = true;
 	}
 
-	// Coord frame is ref box frame.
- 
-	IVec2					ref_face_normal = ref.Get_Face_Normal( trait_id );
-	std::array<IVec2, 2>	inc_face_vertices = Find_Incident_Face( ref_face_normal, ref, inc );
+	// Coord frame is Ref frame.
+	std::array<FVec2, 2>	inc_face_vertices = Find_Incident_Face( ref_face_normal, ref, inc );
+	std::array<FVec2, 2>	ref_face_vertices = ref.Get_Face_Vertices( ref_face_normal );
 
-	std::array<IVec2, 2>	ref_face_vertices = ref.Get_Face_Vertices( trait_id );
-	// Gather data to compute side planes
-	IVec2					side_plane_normal = ( ref_face_vertices [1] - ref_face_vertices [0] ).Normalize();
-	Scalar					pos_plane =  Dot_Prod( side_plane_normal, ref_face_vertices [1] );
-	//Scalar					neg_plane = -Dot_Prod( side_plane_normal, ref_face_vertices [0] );
-	Line					l { side_plane_normal, pos_plane };
+	// Gather data to compute side planes  //
+	FVec2					side_plane_normal = ( ref_face_vertices [1] - ref_face_vertices [0] ).Normalize();
+	Scalar					neg_plane = Dot_Prod( side_plane_normal, ref_face_vertices [1] );
+	Scalar					pos_plane = Dot_Prod( side_plane_normal, ref_face_vertices [0] );
 
-	auto neg_clip = Clip_Segment_to_Line( l.Negated()/*{ -side_plane_normal, neg_plane }*/, inc_face_vertices );
+	auto neg_clip = Clip_Segment_to_Line( { -side_plane_normal, neg_plane }, inc_face_vertices );
 	if ( neg_clip.size() < 2 ) return;
 	inc_face_vertices = std::move( neg_clip );
 
-	auto pos_clip = Clip_Segment_to_Line( l, inc_face_vertices );
+	auto pos_clip = Clip_Segment_to_Line( { side_plane_normal, pos_plane }, inc_face_vertices );
 	if ( pos_clip.size() < 2 ) return;
 	inc_face_vertices = std::move( pos_clip );
 
 	// Generate manifold ( transform to world coords. )
 	const Scalar	d_to_ref_face = Dot_Prod( ref_face_normal, ref_face_vertices [0] );
 	int				ct_pts = 0;
+	//Scalar			penetration { 0 };
+
 	std::for_each( inc_face_vertices.begin(), inc_face_vertices.end(),
-				   [&] ( const IVec2& vertex ) 
+				   [&] ( const FVec2& vertex ) 
 				   {
-					   const Scalar penetration = Dot_Prod( ref_face_normal, vertex ) - d_to_ref_face;
-					   if ( penetration <= Scalar( 0 ) )
+					   const Scalar separation = Dot_Prod( ref_face_normal, vertex ) - d_to_ref_face;
+					   if ( separation <= Scalar( 0 ) )
 					   {
-						   assert( ct_pts <= 1 );
-						   m.contacts [ct_pts].position		= ref.Get_Coord_Frame() * vertex; // to world space
-						   m.contacts [ct_pts].position		+= inc.obb->center;
-						   m.contacts [ct_pts].penetration	= std::fabs( penetration );
+						   m.contacts [ct_pts].position		= IVec2(ref.Get_Coord_Frame() * vertex); // to world space
+						   m.contacts [ct_pts].position		+= inc.obb->center;				  // ct_pts are on inc box
+						   m.contacts [ct_pts].penetration	= std::fabs( separation );
 						   ++ct_pts;
 					   }
 				   } );
-	m.normal = ( flip ) ? ref_face_normal : -ref_face_normal; // Normal goes from ref to inc
+
+
+	m.normal = ( flip ) ? IVec2( -ref_face_normal ) : IVec2( ref_face_normal ); // Normal goes from ref to inc
 	ref.Get_Coord_Frame() *= m.normal;
 	// For debugging
 	m.normal *= 10;
@@ -273,6 +254,12 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	m.b = inc.obb;
 }
 
+
+/*
+============================
+	   DEBUG FUNCTIONS
+============================
+*/
 #include "Graphics.h"
 #include "Font.h"
 
