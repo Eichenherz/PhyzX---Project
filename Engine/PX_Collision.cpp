@@ -204,12 +204,13 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	Geometry_Query			inc { b };
 	FVec2					ref_face_normal;
 	bool					flip = false;
-	
+
 	// Select ref & inc face. 
 	if ( Bias_Greater_Than( penetrationA.first, penetrationB.first ) )
 	{
 		ref_face_normal = penetrationA.second;
-	} else {
+	}
+	else {
 		ref_face_normal = penetrationB.second;
 		ref.Swap( inc );
 		flip = true;
@@ -219,7 +220,7 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 	std::array<FVec2, 2>	inc_face_vertices = Find_Incident_Face( ref_face_normal, ref, inc );
 	std::array<FVec2, 2>	ref_face_vertices = ref.Get_Face_Vertices( ref_face_normal );
 
-	// Gather data to compute side planes  //
+	// Gather data to compute side planes  
 	const FVec2				side_plane_normal = ( ref_face_vertices [1] - ref_face_vertices [0] ).Normalize();
 	const Scalar			neg_plane = -Dot_Prod( side_plane_normal, ref_face_vertices [0] );
 	const Scalar			pos_plane =  Dot_Prod( side_plane_normal, ref_face_vertices [1] );
@@ -242,15 +243,21 @@ void SAT_Narrowphase( Manifold& m, const PX_OBB& a, const PX_OBB& b )
 					   const Scalar separation = Dot_Prod( ref_face_normal, vertex ) - d_to_ref_face;
 					   if ( separation <= Scalar( 0 ) )
 					   {
-						   m.contacts [ct_pts].position = To_World_Frame( IVec2(vertex), *ref.obb );
+						   m.contacts [ct_pts].position = IVec2( vertex );//To_World_Frame( IVec2(vertex), *inc.obb );//
 						   m.contacts [ct_pts].penetration	= std::fabs( separation );
 						   ++ct_pts;
 					   }
 				   } );
-
+	std::for_each( m.contacts.begin(), m.contacts.end(),
+				   [&] ( auto& contact ) 
+				   {
+					   contact.position =	ref.Get_Coord_Frame() * 
+											inc.Get_Coord_Frame().inverse() * contact.position;
+					  // inc.Get_Coord_Frame() *= contact.position;
+					   contact.position += ref.obb->center;
+				   } );
 	m.normal = ( flip ) ? IVec2( -ref_face_normal ) : IVec2( ref_face_normal ); // Normal goes from ref to inc
 	m.normal = To_World_Frame( m.normal, *ref.obb );
-	
 
 	// For debugging purposes.
 	m.a = ref.obb;
