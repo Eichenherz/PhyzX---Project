@@ -259,8 +259,6 @@ RectI Graphics::GetScreenRect()
 	return{ 0,ScreenWidth,0,ScreenHeight };
 }
 
-
-
 void Graphics::EndFrame()
 {
 	HRESULT hr;
@@ -308,21 +306,6 @@ void Graphics::EndFrame()
 			throw CHILI_GFX_EXCEPTION( hr,L"Presenting back buffer" );
 		}
 	}
-}
-
-void Graphics::BeginFrame( Color bg )
-{
-	// clear the sysbuffer
-	std::fill( pSysBuffer, pSysBuffer + Graphics::ScreenHeight * Graphics::ScreenWidth, bg );
-}
-
-void Graphics::PutPixel( int x,int y,Color c )
-{
-	assert( x >= 0 );
-	assert( x < int( Graphics::ScreenWidth ) );
-	assert( y >= 0 );
-	assert( y < int( Graphics::ScreenHeight ) );
-	pSysBuffer[Graphics::ScreenWidth * y + x] = c;
 }
 
 void Graphics::Draw_Line( const IVec2& p1, const IVec2& p2, Color c )
@@ -385,16 +368,6 @@ void Graphics::Draw_Quad( const IVec2 & A, const IVec2 & B, const IVec2 & C, con
 	Draw_Line( B, C, c );
 	Draw_Line( C, D, c );
 	Draw_Line( D, A, c );
-}
-
-
-Color Graphics::GetPixel( int x,int y ) const
-{
-	assert( x >= 0 );
-	assert( x < int( Graphics::ScreenWidth ) );
-	assert( y >= 0 );
-	assert( y < int( Graphics::ScreenHeight ) );
-	return pSysBuffer[Graphics::ScreenWidth * y + x];
 }
 
 //////////////////////////////////////////////////

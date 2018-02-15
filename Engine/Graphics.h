@@ -153,3 +153,18 @@ public:
 	static RectI			GetScreenRect();
 	//static struct PX_OBB	Screen_OBB();
 };
+
+#include "SpriteEffect.h"
+
+#ifndef OPTIMIZED_GFX
+
+extern template 
+void Graphics::DrawSprite<SpriteEffect::Copy>( int x, int y, RectI srcRect, const RectI& clip, const Surface& s, SpriteEffect::Copy, bool reversed );
+
+extern template 
+void Graphics::DrawSprite<SpriteEffect::Chroma>( int x, int y, RectI srcRect, const RectI& clip, const Surface& s, SpriteEffect::Chroma, bool reversed );
+
+extern template
+void Graphics::DrawSprite<SpriteEffect::Substitution>( int x, int y, RectI srcRect, const RectI& clip, const Surface& s, SpriteEffect::Substitution, bool reversed );
+
+#endif
